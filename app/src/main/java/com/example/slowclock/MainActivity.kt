@@ -19,7 +19,6 @@ import com.example.slowclock.util.FCMManager
 import com.example.slowclock.util.FirestoreTestUtil
 import com.example.slowclock.util.GoogleAuthManager
 import com.example.slowclock.util.GoogleCalendarManager
-import com.example.slowclock.util.VertexAIManager
 import kotlinx.coroutines.launch
 
 private const val RC_SIGN_IN = 9001
@@ -27,6 +26,7 @@ private const val RC_SIGN_IN = 9001
 class MainActivity : ComponentActivity() {
     private lateinit var calendarManager: GoogleCalendarManager
     private lateinit var authManager: GoogleAuthManager
+    private lateinit var vertexAIManager: VertexAIManager
 
     @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
         calendarManager = GoogleCalendarManager(this)
         authManager = GoogleAuthManager(this)
 
-        VertexAIManager.initialize(this)
+        vertexAIManager = VertexAIManager(this)
 
         // 테스트 코드 실행
         FirestoreTestUtil.testFirestore()
@@ -61,7 +61,11 @@ class MainActivity : ComponentActivity() {
         // VertexAI 테스트 (추가)
         lifecycleScope.launch {
             try {
-                val recommendations = VertexAIManager.generateScheduleRecommendations("elderly")
+                val recommendations = vertexAIManager.generateScheduleRecommendation(
+                    projectId = "slow-clock-scheduler",
+                    location = "us-central1",
+                    prompt = "elderly"
+                )
                 Log.d("VertexAI_TEST", "추천 결과: $recommendations")
             } catch (e: Exception) {
                 Log.e("VertexAI_TEST", "테스트 실패", e)
