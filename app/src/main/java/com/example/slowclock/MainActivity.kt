@@ -21,7 +21,6 @@ import com.example.slowclock.util.FCMManager
 import com.example.slowclock.util.FirestoreTestUtil
 import com.example.slowclock.util.GoogleAuthManager
 import com.example.slowclock.util.GoogleCalendarManager
-import com.example.slowclock.util.VertexAITestUtil
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -56,8 +55,6 @@ class MainActivity : ComponentActivity() {
         FirestoreTestUtil.testFirestore()
         FCMManager.getToken()
         authManager.signIn()
-        VertexAITestUtil.testRecommendation(this)
-
 
         val useCase = GenerateScheduleRecommendationUseCase(this)
         lifecycleScope.launch {
