@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
         val signInClient = GoogleSignIn.getClient(
             this, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
+
                 .requestScopes(com.google.android.gms.common.api.Scope(CalendarScopes.CALENDAR))
                 .build()
         )
