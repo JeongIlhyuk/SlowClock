@@ -13,9 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.slowclock.ui.theme.SlowClockTheme
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.api.services.calendar.CalendarScopes
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+
+private const val RC_SIGN_IN = 9001
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +58,18 @@ class MainActivity : ComponentActivity() {
                 Log.e("FCM", "FCM 토큰 얻기 실패", task.exception)
             }
         }
+
+        // 구글 로그인 처리
+        val signInClient = GoogleSignIn.getClient(
+            this, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestScopes(com.google.android.gms.common.api.Scope(CalendarScopes.CALENDAR))
+                .build()
+        )
+
+        // 로그인 버튼 클릭 리스너 등에서 호출
+        val signInIntent = signInClient.signInIntent
+        startActivityForResult(signInIntent, RC_SIGN_IN) // RC_SIGN_IN은 상수 (ex: 9001)
 
         enableEdgeToEdge()
         setContent {
