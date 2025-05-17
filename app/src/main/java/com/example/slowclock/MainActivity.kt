@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
         calendarManager = GoogleCalendarManager(this)
         authManager = GoogleAuthManager(this)
 
-        VertexAIManager.initialize()
+        VertexAIManager.initialize(this)
 
         // 테스트 코드 실행
         FirestoreTestUtil.testFirestore()

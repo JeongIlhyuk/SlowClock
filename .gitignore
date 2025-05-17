@@ -34,7 +34,7 @@ google-services.json
 firebase-debug.log
 .firebase/
 firebase-admin-sdk.json
-serviceAccountKey.json
+service_account.json
 
 # Android Profiling
 *.hprof
