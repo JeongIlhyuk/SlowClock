@@ -1,5 +1,7 @@
 package com.example.slowclock
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -15,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.slowclock.ui.theme.SlowClockTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.api.services.calendar.CalendarScopes
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,6 +26,23 @@ import com.google.firebase.messaging.FirebaseMessaging
 private const val RC_SIGN_IN = 9001
 
 class MainActivity : ComponentActivity() {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                try {
+                    val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                    val account = task.getResult(ApiException::class.java)
+                    Log.d("GoogleLogin", "로그인 성공: ${account.displayName}, ${account.email}")
+                } catch (e: ApiException) {
+                    Log.e("GoogleLogin", "로그인 실패: ${e.statusCode}", e)
+                }
+            } else {
+                Log.e("GoogleLogin", "로그인 취소됨 또는 실패, resultCode: $resultCode")
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
