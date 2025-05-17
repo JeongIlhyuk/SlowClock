@@ -65,7 +65,6 @@ class VertexAIManager(private val context: Context) {
             Log.e(TAG, "일정 추천 생성 실패: HTTP ${e.code()}", e)
             null
         } catch (e: Exception) {
-            // 여기를 아래 코드로 교체
             Log.e(TAG, "상세 에러: ${e.stackTraceToString()}")
             null
         }
