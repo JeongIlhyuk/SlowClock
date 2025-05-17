@@ -8,11 +8,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.example.slowclock.data.repository.VertexAIRepository
 import com.example.slowclock.domain.usecase.GenerateScheduleRecommendationUseCase
@@ -70,28 +70,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             SlowClockTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    Button(
+                        onClick = {
+                            val intent = Intent(this@MainActivity, AITestActivity::class.java)
+                            startActivity(intent)
+                        },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text("AI 테스트 열기")
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SlowClockTheme {
-        Greeting("Android")
     }
 }
