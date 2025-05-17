@@ -55,7 +55,6 @@ package-lock.json
 .env.production
 
 # 데이터 스크립트 관련
-data/
 seeds/
 temp/
 *.csv
