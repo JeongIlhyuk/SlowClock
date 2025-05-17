@@ -20,6 +20,8 @@ grpcAndroid = "1.72.0"
 grpcOkhttp = "1.72.0"
 grpcProtobufLite = "1.72.0"
 grpcStub = "1.72.0"
+retrofit = "3.0.0"
+converterGson = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +50,8 @@ grpc-android = { group = "io.grpc", name = "grpc-android", version.ref = "grpcAn
 grpc-okhttp = { group = "io.grpc", name = "grpc-okhttp", version.ref = "grpcOkhttp" }
 grpc-protobuf-lite = { group = "io.grpc", name = "grpc-protobuf-lite", version.ref = "grpcProtobufLite" }
 grpc-stub = { group = "io.grpc", name = "grpc-stub", version.ref = "grpcStub" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "converterGson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
