@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.slowclock" />
+                  <option name="mobileSdkAppId" value="1:887622067286:android:dfa085adbcd6d0533e87f7" />
+                  <option name="projectId" value="slow-clock-scheduler" />
+                  <option name="projectNumber" value="887622067286" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
