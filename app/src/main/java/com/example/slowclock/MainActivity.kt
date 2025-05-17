@@ -62,7 +62,10 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 val prompt = """
-    너를 소개해
+다음 사용자를 위한 일정 추천을 3개 제안해주세요:
+- 사용자 유형: 고령자
+- 요일: 월요일
+- 시간대: 오전
 """
 
                 val recommendations = vertexAIManager.generateScheduleRecommendation(

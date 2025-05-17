@@ -22,7 +22,7 @@ class VertexAIManager(private val context: Context) {
         location: String,
         prompt: String
     ): String? {
-        val modelId = "gemini-2.5-flash-preview-04-17"
+        val modelId = "gemini-2.0-flash-lite-001"
         return try {
             Log.d(TAG, "자격 증명 로드 시작")
             // Load service account credentials from raw resource
@@ -59,14 +59,14 @@ class VertexAIManager(private val context: Context) {
             val result = response.candidates.firstOrNull()?.content?.parts
                 ?.joinToString("\n") { it.text }
 
-            Log.d(TAG, "API 응답 성공")
             result
 
         } catch (e: HttpException) {
             Log.e(TAG, "일정 추천 생성 실패: HTTP ${e.code()}", e)
             null
         } catch (e: Exception) {
-            Log.e(TAG, "일정 추천 생성 실패: ${e.message}", e)
+            // 여기를 아래 코드로 교체
+            Log.e(TAG, "상세 에러: ${e.stackTraceToString()}")
             null
         }
     }
