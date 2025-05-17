@@ -6,11 +6,11 @@
 ## 🚨 개발 환경 설정
 
 - google-services.json
-  파일은 {https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock}
+  파일은 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에서 받아 `app`에 넣기
 - service_account.json 파일은 `app/src/main/res/raw/`에 넣기
 - 본인 디버그용 SHA-1
-  키를 {https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock}
+  키를 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에 등록
 
 ```
