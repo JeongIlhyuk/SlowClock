@@ -1,7 +1,9 @@
-package com.example.slowclock
+package com.example.slowclock.data.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.slowclock.R
+import com.example.slowclock.config.AIConfig
 import com.example.slowclock.data.api.Content
 import com.example.slowclock.data.api.GenerateContentRequest
 import com.example.slowclock.data.api.GenerationConfig
@@ -13,16 +15,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-class VertexAIManager(private val context: Context) {
+class VertexAIRepository(private val context: Context) {
     private val TAG = "VertexAI_SLOWCLOCK"
     private val vertexAIService: VertexAIService = VertexAIServiceFactory.create()
 
     suspend fun generateScheduleRecommendation(
-        projectId: String,
-        location: String,
         prompt: String
     ): String? {
-        val modelId = "gemini-2.0-flash-lite-001"
         return try {
             Log.d(TAG, "자격 증명 로드 시작")
             // Load service account credentials from raw resource
@@ -40,9 +39,9 @@ class VertexAIManager(private val context: Context) {
             Log.d(TAG, "API 요청 시작: $prompt")
             val response = withContext(Dispatchers.IO) {
                 vertexAIService.generateContent(
-                    projectId = projectId,
-                    location = location,
-                    modelId = modelId,
+                    projectId = AIConfig.PROJECT_ID,
+                    location = AIConfig.LOCATION,
+                    modelId = AIConfig.MODEL_ID,
                     request = GenerateContentRequest(
                         contents = listOf(
                             Content(role = "user", parts = listOf(Part(text = prompt)))

@@ -14,19 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
+import com.example.slowclock.data.repository.VertexAIRepository
+import com.example.slowclock.domain.usecase.GenerateScheduleRecommendationUseCase
 import com.example.slowclock.ui.theme.SlowClockTheme
 import com.example.slowclock.util.FCMManager
 import com.example.slowclock.util.FirestoreTestUtil
 import com.example.slowclock.util.GoogleAuthManager
 import com.example.slowclock.util.GoogleCalendarManager
+import com.example.slowclock.util.VertexAITestUtil
 import kotlinx.coroutines.launch
-
-private const val RC_SIGN_IN = 9001
 
 class MainActivity : ComponentActivity() {
     private lateinit var calendarManager: GoogleCalendarManager
     private lateinit var authManager: GoogleAuthManager
-    private lateinit var vertexAIManager: VertexAIManager
+    private lateinit var vertexAIManager: VertexAIRepository
 
     @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -49,30 +50,19 @@ class MainActivity : ComponentActivity() {
         calendarManager = GoogleCalendarManager(this)
         authManager = GoogleAuthManager(this)
 
-        vertexAIManager = VertexAIManager(this)
+        vertexAIManager = VertexAIRepository(this)
 
         // 테스트 코드 실행
         FirestoreTestUtil.testFirestore()
         FCMManager.getToken()
-
-        // 구글 로그인
         authManager.signIn()
+        VertexAITestUtil.testRecommendation(this)
 
-        // VertexAI 테스트 (추가)
+
+        val useCase = GenerateScheduleRecommendationUseCase(this)
         lifecycleScope.launch {
             try {
-                val prompt = """
-다음 사용자를 위한 일정 추천을 3개 제안해주세요:
-- 사용자 유형: 고령자
-- 요일: 월요일
-- 시간대: 오전
-"""
-
-                val recommendations = vertexAIManager.generateScheduleRecommendation(
-                    projectId = "slow-clock-scheduler",
-                    location = "us-central1",
-                    prompt = prompt
-                )
+                val recommendations = useCase("고령자", "월요일", "오전")
                 Log.d("VertexAI_SLOWCLOCK", "추천 결과: $recommendations")
             } catch (e: Exception) {
                 Log.e("VertexAI_SLOWCLOCK", "테스트 실패", e)
