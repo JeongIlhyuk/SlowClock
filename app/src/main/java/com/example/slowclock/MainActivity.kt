@@ -19,6 +19,7 @@ import com.example.slowclock.util.FCMManager
 import com.example.slowclock.util.FirestoreTestUtil
 import com.example.slowclock.util.GoogleAuthManager
 import com.example.slowclock.util.GoogleCalendarManager
+import com.example.slowclock.util.VertexAIManager
 import kotlinx.coroutines.launch
 
 private const val RC_SIGN_IN = 9001
@@ -48,12 +49,24 @@ class MainActivity : ComponentActivity() {
         calendarManager = GoogleCalendarManager(this)
         authManager = GoogleAuthManager(this)
 
+        VertexAIManager.initialize()
+
         // 테스트 코드 실행
         FirestoreTestUtil.testFirestore()
         FCMManager.getToken()
 
         // 구글 로그인
         authManager.signIn()
+
+        // VertexAI 테스트 (추가)
+        lifecycleScope.launch {
+            try {
+                val recommendations = VertexAIManager.generateScheduleRecommendations("elderly")
+                Log.d("VertexAI_TEST", "추천 결과: $recommendations")
+            } catch (e: Exception) {
+                Log.e("VertexAI_TEST", "테스트 실패", e)
+            }
+        }
 
         enableEdgeToEdge()
         setContent {
