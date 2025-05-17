@@ -24,13 +24,20 @@ class VertexAIManager(private val context: Context) {
     ): String? {
         val modelId = "gemini-2.5-flash-preview-04-17"
         return try {
+            Log.d(TAG, "자격 증명 로드 시작")
             // Load service account credentials from raw resource
-            val credentials = ServiceAccountCredentials.fromStream(
-                context.resources.openRawResource(R.raw.service_account)
-            ).createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
-            credentials.refresh()
+            val credentials = withContext(Dispatchers.IO) {
+                val creds = ServiceAccountCredentials.fromStream(
+                    context.resources.openRawResource(R.raw.service_account)
+                ).createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
+                creds.refresh()
+                creds
+            }
+
+            Log.d(TAG, "인증 토큰 획득 성공")
             val token = "Bearer ${credentials.accessToken.tokenValue}"
 
+            Log.d(TAG, "API 요청 시작: $prompt")
             val response = withContext(Dispatchers.IO) {
                 vertexAIService.generateContent(
                     projectId = projectId,
@@ -48,8 +55,13 @@ class VertexAIManager(private val context: Context) {
                     auth = token
                 )
             }
-            response.candidates.firstOrNull()?.content?.parts
+
+            val result = response.candidates.firstOrNull()?.content?.parts
                 ?.joinToString("\n") { it.text }
+
+            Log.d(TAG, "API 응답 성공")
+            result
+
         } catch (e: HttpException) {
             Log.e(TAG, "일정 추천 생성 실패: HTTP ${e.code()}", e)
             null

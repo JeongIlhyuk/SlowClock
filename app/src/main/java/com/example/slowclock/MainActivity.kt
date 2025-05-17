@@ -61,14 +61,18 @@ class MainActivity : ComponentActivity() {
         // VertexAI 테스트 (추가)
         lifecycleScope.launch {
             try {
+                val prompt = """
+    너를 소개해
+"""
+
                 val recommendations = vertexAIManager.generateScheduleRecommendation(
                     projectId = "slow-clock-scheduler",
                     location = "us-central1",
-                    prompt = "elderly"
+                    prompt = prompt
                 )
-                Log.d("VertexAI_TEST", "추천 결과: $recommendations")
+                Log.d("VertexAI_SLOWCLOCK", "추천 결과: $recommendations")
             } catch (e: Exception) {
-                Log.e("VertexAI_TEST", "테스트 실패", e)
+                Log.e("VertexAI_SLOWCLOCK", "테스트 실패", e)
             }
         }
 
