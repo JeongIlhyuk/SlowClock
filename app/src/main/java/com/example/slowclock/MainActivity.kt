@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.slowclock.ui.theme.SlowClockTheme
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 
@@ -21,14 +22,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // Firestore 연동 테스트
-        FirebaseFirestore.getInstance().collection("test")
-            .document("test")
-            .get()
+        FirebaseFirestore.getInstance().collection("test_collection")
+            .document("test_doc")
+            .set(hashMapOf("test_field" to "test_value", "timestamp" to Timestamp.now()))
             .addOnSuccessListener {
-                Log.d("Firebase", "연결 성공")
+                Log.d("Firestore", "데이터 쓰기 성공")
+
+                // 데이터 읽기 테스트
+                FirebaseFirestore.getInstance().collection("test_collection")
+                    .document("test_doc")
+                    .get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            Log.d("Firestore", "데이터 읽기 성공: ${document.data}")
+                        } else {
+                            Log.d("Firestore", "문서가 없음")
+                        }
+                    }
             }
-            .addOnFailureListener {
-                Log.e("Firebase", "연결 실패: ${it.message}")
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "데이터 쓰기 실패: ${e.message}")
             }
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
