@@ -31,3 +31,7 @@
 
 - `{기능영역}_SLOWCLOCK` 형식으로 작성
     - 예: `Auth_SLOWCLOCK`, `Calender_SLOWCLOCK`, `FCM_SLOWCLOCK`, `DB_SLOWCLOCK`
+
+## 💰 API 비용 관리
+
+- Vertex AI는 쿼리당 비용 발생! 테스트할 때 신중하게 요청
