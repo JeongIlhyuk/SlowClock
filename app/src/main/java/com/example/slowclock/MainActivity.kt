@@ -15,40 +15,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import com.example.slowclock.ui.theme.SlowClockTheme
+import com.example.slowclock.util.FCMManager
+import com.example.slowclock.util.FirestoreTestUtil
+import com.example.slowclock.util.GoogleAuthManager
 import com.example.slowclock.util.GoogleCalendarManager
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.api.services.calendar.CalendarScopes
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
 private const val RC_SIGN_IN = 9001
 
 class MainActivity : ComponentActivity() {
-
     private lateinit var calendarManager: GoogleCalendarManager
+    private lateinit var authManager: GoogleAuthManager
 
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val TAG = "Auth_SLOWCLOCK"
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == RC_SIGN_IN) {
-            if (resultCode == RESULT_OK && data != null) {
-                try {
-                    val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                    val account = task.getResult(ApiException::class.java)
-                    Log.d("GoogleLogin", "로그인 성공: ${account.displayName}, ${account.email}")
-
-                    lifecycleScope.launch {
-                        calendarManager.fetchAllEvents()
-                    }
-                } catch (e: ApiException) {
-                    Log.e("GoogleLogin", "로그인 실패: ${e.statusCode}", e)
-                }
-            } else {
-                Log.e("GoogleLogin", "로그인 취소됨 또는 실패, resultCode: $resultCode")
+        val account = authManager.handleSignInResult(requestCode, resultCode, data)
+        if (account != null) {
+            Log.d(TAG, "로그인 성공: ${account.displayName}, ${account.email}")
+            lifecycleScope.launch {
+                calendarManager.fetchAllEvents()
             }
         }
     }
@@ -56,53 +44,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 매니저 초기화
         calendarManager = GoogleCalendarManager(this)
+        authManager = GoogleAuthManager(this)
 
-        // Firestore 연동 테스트
-        FirebaseFirestore.getInstance().collection("test_collection")
-            .document("test_doc")
-            .set(hashMapOf("test_field" to "test_value", "timestamp" to Timestamp.now()))
-            .addOnSuccessListener {
-                Log.d("Firestore", "데이터 쓰기 성공")
+        // 테스트 코드 실행
+        FirestoreTestUtil.testFirestore()
+        FCMManager.getToken()
 
-                // 데이터 읽기 테스트
-                FirebaseFirestore.getInstance().collection("test_collection")
-                    .document("test_doc")
-                    .get()
-                    .addOnSuccessListener { document ->
-                        if (document.exists()) {
-                            Log.d("Firestore", "데이터 읽기 성공: ${document.data}")
-                        } else {
-                            Log.d("Firestore", "문서가 없음")
-                        }
-                    }
-            }
-            .addOnFailureListener { e ->
-                Log.e("Firestore", "데이터 쓰기 실패: ${e.message}")
-            }
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val token = task.result
-                Log.d("FCM", "FCM 토큰: $token")
-                // 이 토큰을 백엔드에 저장하면 나중에 알림 보낼 때 사용 가능
-            } else {
-                Log.e("FCM", "FCM 토큰 얻기 실패", task.exception)
-            }
-        }
-
-        // 구글 로그인 처리
-        val signInClient = GoogleSignIn.getClient(
-            this, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-
-                .requestScopes(com.google.android.gms.common.api.Scope(CalendarScopes.CALENDAR))
-                .build()
-        )
-
-        // 로그인 버튼 클릭 리스너 등에서 호출
-        val signInIntent = signInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN) // RC_SIGN_IN은 상수 (ex: 9001)
+        // 구글 로그인
+        authManager.signIn()
 
         enableEdgeToEdge()
         setContent {

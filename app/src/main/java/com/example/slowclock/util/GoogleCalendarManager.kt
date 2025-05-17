@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import java.util.Collections
 
 class GoogleCalendarManager(private val context: Context) {
+    private val TAG = "Calender_SLOWCLOCK"
     private val scope = Collections.singletonList(CalendarScopes.CALENDAR)
 
     // Google 로그인 옵션 설정
@@ -55,15 +56,15 @@ class GoogleCalendarManager(private val context: Context) {
                 // 중복 제거해서 로그
                 val uniqueEvents = events.items.distinctBy { it.summary }
                 Log.d(
-                    "GoogleCalendar",
+                    TAG,
                     "전체 일정 ${events.items.size}개 (중복 제거 후 ${uniqueEvents.size}개)"
                 )
-                Log.d("GoogleCalendar", "중복 제거된 일정 목록: ${uniqueEvents.map { it.summary }}")
+                Log.d(TAG, "중복 제거된 일정 목록: ${uniqueEvents.map { it.summary }}")
 
                 // 반환은 원본 그대로 하거나 중복 제거
                 events.items.map { it.summary }
             } catch (e: Exception) {
-                Log.e("GoogleCalendar", "일정 가져오기 실패: ${e.message}")
+                Log.e(TAG, "일정 가져오기 실패: ${e.message}")
                 emptyList()
             }
         }
