@@ -9,7 +9,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.util.DateTime
 import com.google.api.services.calendar.Calendar
 import com.google.api.services.calendar.CalendarScopes
 import kotlinx.coroutines.Dispatchers
@@ -41,31 +40,27 @@ class GoogleCalendarManager(private val context: Context) {
             .build()
     }
 
-    // 오늘 일정 가져오기 테스트
-    suspend fun fetchTodayEvents(): List<String> {
+    suspend fun fetchAllEvents(maxResults: Int = 100): List<String> {
         val account = GoogleSignIn.getLastSignedInAccount(context) ?: return emptyList()
 
         return withContext(Dispatchers.IO) {
             try {
                 val service = getCalendarService(account)
 
-                val now = DateTime(System.currentTimeMillis())
-                val midnight = DateTime(java.util.Calendar.getInstance().apply {
-                    set(java.util.Calendar.HOUR_OF_DAY, 23)
-                    set(java.util.Calendar.MINUTE, 59)
-                    set(java.util.Calendar.SECOND, 59)
-                }.timeInMillis)
-
                 val events = service.events().list("primary")
-                    .setTimeMin(now)
-                    .setTimeMax(midnight)
-                    .setOrderBy("startTime")
-                    .setSingleEvents(true)
+                    .setMaxResults(maxResults)
+                    .setSingleEvents(false)  // 반복 일정을 하나로 처리
                     .execute()
 
-                Log.d("GoogleCalendar", "일정 ${events.items.size}개 가져옴")
+                // 중복 제거해서 로그
+                val uniqueEvents = events.items.distinctBy { it.summary }
+                Log.d(
+                    "GoogleCalendar",
+                    "전체 일정 ${events.items.size}개 (중복 제거 후 ${uniqueEvents.size}개)"
+                )
+                Log.d("GoogleCalendar", "중복 제거된 일정 목록: ${uniqueEvents.map { it.summary }}")
 
-                // 일정 제목만 반환
+                // 반환은 원본 그대로 하거나 중복 제거
                 events.items.map { it.summary }
             } catch (e: Exception) {
                 Log.e("GoogleCalendar", "일정 가져오기 실패: ${e.message}")

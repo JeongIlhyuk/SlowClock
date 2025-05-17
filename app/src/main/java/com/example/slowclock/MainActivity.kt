@@ -1,6 +1,5 @@
 package com.example.slowclock
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import com.example.slowclock.ui.theme.SlowClockTheme
+import com.example.slowclock.util.GoogleCalendarManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -22,19 +23,27 @@ import com.google.api.services.calendar.CalendarScopes
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.launch
 
 private const val RC_SIGN_IN = 9001
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var calendarManager: GoogleCalendarManager
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == RC_SIGN_IN) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
+            if (resultCode == RESULT_OK && data != null) {
                 try {
                     val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                     val account = task.getResult(ApiException::class.java)
                     Log.d("GoogleLogin", "로그인 성공: ${account.displayName}, ${account.email}")
+
+                    lifecycleScope.launch {
+                        calendarManager.fetchAllEvents()
+                    }
                 } catch (e: ApiException) {
                     Log.e("GoogleLogin", "로그인 실패: ${e.statusCode}", e)
                 }
@@ -43,8 +52,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        calendarManager = GoogleCalendarManager(this)
 
         // Firestore 연동 테스트
         FirebaseFirestore.getInstance().collection("test_collection")
