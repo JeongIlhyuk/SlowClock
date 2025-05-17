@@ -1,1 +1,12 @@
-# SlowClock-Android
+## 🚨 개발 환경 설정
+
+- google-services.json 파일은 리포에 없음. 각자 Firebase 콘솔에서 다운로드
+
+## 📋 개발 규칙
+
+- 각자 개발할 기능은 feature branch로 분리해서 작업 (feature/기능명)
+- 커밋 메시지 규칙: "[기능] 내용" 형식으로 작성
+
+## 💩 주의사항
+
+- 메인 브랜치에 직접 푸시 금지. PR로 코드 리뷰 받고 머지
