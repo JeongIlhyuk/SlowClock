@@ -7,79 +7,111 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
-import com.example.slowclock.data.repository.VertexAIRepository
-import com.example.slowclock.domain.GenerateScheduleRecommendationUseCase
+import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.data.repository.ScheduleRepository
 import com.example.slowclock.ui.main.MainScreen
 import com.example.slowclock.ui.theme.SlowClockTheme
-import com.example.slowclock.util.FCMManager
-import com.example.slowclock.util.FirestoreTestUtil
 import com.example.slowclock.util.GoogleAuthManager
-import com.example.slowclock.util.GoogleCalendarManager
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
-    private lateinit var calendarManager: GoogleCalendarManager
     private lateinit var authManager: GoogleAuthManager
-    private lateinit var vertexAIManager: VertexAIRepository
 
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    @Deprecated("This method has been deprecated")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val TAG = "Auth_SLOWCLOCK"
+        Log.d("AUTH", "onActivityResult 호출됨")
         super.onActivityResult(requestCode, resultCode, data)
 
         val account = authManager.handleSignInResult(requestCode, resultCode, data)
         if (account != null) {
-            Log.d(TAG, "로그인 성공: ${account.displayName}, ${account.email}")
-            lifecycleScope.launch {
-                calendarManager.fetchAllEvents()
-            }
+            Log.d("AUTH", "로그인 성공: ${account.displayName}")
+
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnSuccessListener {
+                    Log.d("AUTH", "Firebase 연결 성공")
+                    addDummyData() // 더미 데이터 추가
+                }
+                .addOnFailureListener { e ->
+                    Log.e("AUTH", "Firebase 연결 실패", e)
+                }
+        } else {
+            Log.e("AUTH", "구글 로그인 실패")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MAIN", "onCreate 시작")
 
-        // 매니저 초기화
-        calendarManager = GoogleCalendarManager(this)
-        authManager = GoogleAuthManager(this)
+        try {
+            authManager = GoogleAuthManager(this)
+            Log.d("MAIN", "AuthManager 초기화 완료")
 
-        vertexAIManager = VertexAIRepository(this)
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser == null) {
+                Log.d("AUTH", "로그인 필요 - 구글 로그인 시작")
+                authManager.signIn()
+            } else {
+                Log.d("AUTH", "이미 로그인됨: ${currentUser.uid}")
+                addDummyData() // 이미 로그인된 상태에서도 더미 데이터 체크
+            }
 
-        // 테스트 코드 실행
-        FirestoreTestUtil.testFirestore()
-        FCMManager.getToken()
-        authManager.signIn()
+            enableEdgeToEdge()
+            setContent {
+                SlowClockTheme {
+                    MainScreen()
+                }
+            }
+            Log.d("MAIN", "onCreate 완료")
 
-        val useCase = GenerateScheduleRecommendationUseCase(this)
+        } catch (e: Exception) {
+            Log.e("MAIN", "onCreate 실패", e)
+        }
+    }
+
+    private fun addDummyData() {
         lifecycleScope.launch {
             try {
-                val recommendations = useCase("고령자", "월요일", "오전")
-                Log.d("VertexAI_SLOWCLOCK", "추천 결과: $recommendations")
-            } catch (e: Exception) {
-                Log.e("VertexAI_SLOWCLOCK", "테스트 실패", e)
-            }
-        }
+                val repo = ScheduleRepository()
+                val existing = repo.getTodaySchedules()
 
-        enableEdgeToEdge()
-        setContent {
-            SlowClockTheme {
-                MainScreen(
-                    onAddSchedule = {
-                        // TODO: 일정 추가 화면으로 이동
+                if (existing.isEmpty()) {
+                    Log.d("DUMMY", "일정 없음, 더미 데이터 추가")
+
+                    val schedules = listOf(
+                        Schedule(title = "아침 운동", startTime = getTodayTime(9, 0)),
+                        Schedule(
+                            title = "점심 약속",
+                            startTime = getTodayTime(12, 30),
+                            isCompleted = true
+                        ),
+                        Schedule(title = "저녁 산책", startTime = getTodayTime(18, 0)),
+                        Schedule(title = "지금 할 일", startTime = Timestamp.now())
+                    )
+
+                    schedules.forEach {
+                        repo.addSchedule(it)
                     }
-                )
-//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    Button(
-//                        onClick = {
-//                            val intent = Intent(this@MainActivity, AITestActivity::class.java)
-//                            startActivity(intent)
-//                        },
-//                        modifier = Modifier.padding(16.dp)
-//                    ) {
-//                        Text("AI 테스트 열기")
-//                    }
-//                }
+                    Log.d("DUMMY", "더미 데이터 추가 완료")
+                } else {
+                    Log.d("DUMMY", "이미 일정 있음: ${existing.size}개")
+                }
+            } catch (e: Exception) {
+                Log.e("DUMMY", "더미 데이터 추가 실패", e)
             }
         }
+    }
+
+    private fun getTodayTime(hour: Int, minute: Int): Timestamp {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        calendar.set(Calendar.SECOND, 0)
+        return Timestamp(calendar.time)
     }
 }

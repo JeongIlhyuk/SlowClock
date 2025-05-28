@@ -1,10 +1,10 @@
 package com.example.slowclock.data.repository
 
+import android.util.Log
 import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.model.Schedule
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.firestore.ktx.toObjects
 import kotlinx.coroutines.tasks.await
@@ -18,6 +18,8 @@ class ScheduleRepository {
     private val schedulesCollection = FirestoreDB.schedules
 
     // 현재 사용자의 오늘 일정 가져오기
+// ScheduleRepository.kt
+    // ScheduleRepository.kt 수정
     suspend fun getTodaySchedules(): List<Schedule> {
         val uid = auth.currentUser?.uid ?: return emptyList()
 
@@ -25,23 +27,31 @@ class ScheduleRepository {
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
-        val startOfDay = Timestamp(calendar.time)
+        val startOfDay = calendar.time
 
         calendar.set(Calendar.HOUR_OF_DAY, 23)
         calendar.set(Calendar.MINUTE, 59)
         calendar.set(Calendar.SECOND, 59)
-        val endOfDay = Timestamp(calendar.time)
+        val endOfDay = calendar.time
 
         return try {
-            schedulesCollection
+            // 단순 쿼리로 변경 (날짜 필터링 제거)
+            val allSchedules = schedulesCollection
                 .whereEqualTo("userId", uid)
-                .whereGreaterThanOrEqualTo("startTime", startOfDay)
-                .whereLessThanOrEqualTo("startTime", endOfDay)
-                .orderBy("startTime", Query.Direction.ASCENDING)
                 .get()
                 .await()
-                .toObjects()
+                .toObjects<Schedule>()
+
+            // 코드에서 날짜 필터링
+            val todaySchedules = allSchedules.filter { schedule ->
+                val scheduleTime = schedule.startTime.toDate()
+                scheduleTime.after(startOfDay) && scheduleTime.before(endOfDay)
+            }.sortedBy { it.startTime }
+
+            Log.d("ScheduleRepo", "오늘 일정 개수: ${todaySchedules.size}")
+            todaySchedules
         } catch (e: Exception) {
+            Log.e("ScheduleRepo", "쿼리 실패", e)
             emptyList()
         }
     }
