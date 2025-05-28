@@ -35,7 +35,7 @@ fun MainScreen(
     onAddSchedule: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val dateFormat = SimpleDateFormat("오늘 M월 d일 EEEE", Locale.KOREAN)
+    val dateFormat = SimpleDateFormat("오늘 yyyy년 M월 d일 EEEE", Locale.KOREAN)
 
     Scaffold(
         topBar = {
