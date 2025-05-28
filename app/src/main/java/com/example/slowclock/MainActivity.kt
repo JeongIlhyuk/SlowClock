@@ -7,8 +7,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.slowclock.data.model.Schedule
 import com.example.slowclock.data.repository.ScheduleRepository
+import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.main.MainScreen
 import com.example.slowclock.ui.theme.SlowClockTheme
 import com.example.slowclock.util.GoogleAuthManager
@@ -64,7 +68,23 @@ class MainActivity : ComponentActivity() {
             enableEdgeToEdge()
             setContent {
                 SlowClockTheme {
-                    MainScreen()
+                    val navController = rememberNavController()
+
+                    NavHost(
+                        navController = navController,
+                        startDestination = "main"
+                    ) {
+                        composable("main") {
+                            MainScreen(
+                                onAddSchedule = { navController.navigate("add_schedule") }
+                            )
+                        }
+                        composable("add_schedule") {
+                            AddScheduleScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
                 }
             }
             Log.d("MAIN", "onCreate 완료")
