@@ -35,7 +35,7 @@ fun MainScreen(
     onAddSchedule: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val dateFormat = SimpleDateFormat("오늘 yyyy년 M월 d일 EEEE", Locale.KOREAN)
+    val dateFormat = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
 
     Scaffold(
         topBar = {
@@ -46,14 +46,14 @@ fun MainScreen(
                     ) {
                         Text(
                             text = "느린시계",
-                            fontSize = 28.sp,  // 크기 증가
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black  // 명확한 검은색
+                            color = Color(0xFF2196F3)
                         )
                         Text(
-                            text = dateFormat.format(Date()),
-                            fontSize = 16.sp,  // 크기 증가
-                            color = Color.Black.copy(alpha = 0.8f)  // 진한 회색
+                            text = "오늘 ${dateFormat.format(Date())}",
+                            fontSize = 14.sp,
+                            color = Color.Gray
                         )
                     }
                 },
@@ -67,9 +67,9 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF8F8F8)),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .background(Color(0xFFF5F5F5)),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // 지금 할 일
             uiState.currentSchedule?.let { schedule ->

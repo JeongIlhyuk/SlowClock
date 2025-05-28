@@ -1,9 +1,9 @@
 package com.example.slowclock.ui.main.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,25 +31,29 @@ fun TodayScheduleSection(
             modifier = Modifier.padding(bottom = 8.dp)
         ) {
             Icon(
-                Icons.Outlined.CalendarToday,  // 캘린더 아이콘
+                Icons.Outlined.CalendarToday,
                 contentDescription = null,
                 tint = Color(0xFF2196F3),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "오늘의 일정",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
             )
         }
 
-        schedules.forEach { schedule ->
-            ScheduleCard(
-                schedule = schedule,
-                onToggleComplete = { onToggleComplete(schedule.id) }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            schedules.forEach { schedule ->
+                ScheduleCard(
+                    schedule = schedule,
+                    onToggleComplete = { onToggleComplete(schedule.id) }
+                )
+            }
         }
     }
 }

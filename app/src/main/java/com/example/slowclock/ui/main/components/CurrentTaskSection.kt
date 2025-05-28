@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -35,99 +34,73 @@ fun CurrentTaskSection(schedule: Schedule) {
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
 
     Column {
+        // 섹션 헤더
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         ) {
             Icon(
-                Icons.Outlined.AccessTime,  // 시계 아이콘
+                Icons.Outlined.AccessTime,
                 contentDescription = null,
                 tint = Color(0xFF2196F3),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "지금 할 일",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2196F3)
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
             )
             Spacer(modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier
-                    .background(
-                        Color(0xFFE3F2FD),
-                        RoundedCornerShape(16.dp)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = timeFormat.format(schedule.startTime.toDate()),
-                    fontSize = 14.sp,
-                    color = Color(0xFF2196F3)
-                )
-            }
+            Text(
+                text = timeFormat.format(schedule.startTime.toDate()),
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
         }
 
-        Box {
-            // 왼쪽 세로 바
+        // 노란색 카드 (왼쪽 바 제거)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFFFF9C4)
+            ),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
             Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(80.dp)
-                    .background(Color(0xFFFFA000))
-                    .align(Alignment.CenterStart)
-            )
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFF3CD)
-                ),
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 12.dp,
-                    bottomStart = 0.dp,
-                    bottomEnd = 12.dp
-                )
+                modifier = Modifier.fillMaxWidth()
             ) {
+                // 왼쪽 노란 바
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(60.dp)
+                        .background(Color(0xFFFFD54F))
+                        .align(Alignment.CenterStart)
+                )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .padding(start = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color(0xFFFFE082), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null,
-                            tint = Color(0xFFFFA000),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = schedule.title,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        if (schedule.description.isNotEmpty()) {
-                            Text(
-                                text = schedule.description,
-                                fontSize = 16.sp,
-                                color = Color.Gray
-                            )
-                        }
-                    }
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = Color(0xFFF57C00),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = schedule.title,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Black
+                    )
                 }
             }
         }
