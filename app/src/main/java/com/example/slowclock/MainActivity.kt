@@ -6,16 +6,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.example.slowclock.data.repository.VertexAIRepository
-import com.example.slowclock.domain.usecase.GenerateScheduleRecommendationUseCase
+import com.example.slowclock.domain.GenerateScheduleRecommendationUseCase
+import com.example.slowclock.ui.main.MainScreen
 import com.example.slowclock.ui.theme.SlowClockTheme
 import com.example.slowclock.util.FCMManager
 import com.example.slowclock.util.FirestoreTestUtil
@@ -69,17 +63,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SlowClockTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Button(
-                        onClick = {
-                            val intent = Intent(this@MainActivity, AITestActivity::class.java)
-                            startActivity(intent)
-                        },
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text("AI 테스트 열기")
+                MainScreen(
+                    onAddSchedule = {
+                        // TODO: 일정 추가 화면으로 이동
                     }
-                }
+                )
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    Button(
+//                        onClick = {
+//                            val intent = Intent(this@MainActivity, AITestActivity::class.java)
+//                            startActivity(intent)
+//                        },
+//                        modifier = Modifier.padding(16.dp)
+//                    ) {
+//                        Text("AI 테스트 열기")
+//                    }
+//                }
             }
         }
     }

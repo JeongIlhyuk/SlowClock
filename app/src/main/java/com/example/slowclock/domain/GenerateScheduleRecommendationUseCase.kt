@@ -1,4 +1,4 @@
-package com.example.slowclock.domain.usecase
+package com.example.slowclock.domain
 
 import android.content.Context
 import com.example.slowclock.data.repository.VertexAIRepository
