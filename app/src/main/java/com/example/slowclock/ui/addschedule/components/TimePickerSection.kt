@@ -61,7 +61,8 @@ fun TimePickerSection(
             Text(
                 text = "빠른 선택",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = Color(0xFF424242), // 기존 Color.Gray에서 더 진한 색으로
+                fontWeight = FontWeight.Medium, // 폰트 두께 추가
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -74,7 +75,12 @@ fun TimePickerSection(
                         onClick = { onTimeSelected(calendar) },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(label, fontSize = 14.sp)
+                        Text(
+                            label,
+                            fontSize = 14.sp,
+                            color = Color(0xFF2196F3), // 버튼 텍스트 색상 명시
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -90,7 +96,12 @@ fun TimePickerSection(
                         onClick = { onTimeSelected(calendar) },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(label, fontSize = 14.sp)
+                        Text(
+                            label,
+                            fontSize = 14.sp,
+                            color = Color(0xFF2196F3), // 버튼 텍스트 색상 명시
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

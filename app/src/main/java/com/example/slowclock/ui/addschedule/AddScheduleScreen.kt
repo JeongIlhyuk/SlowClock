@@ -112,9 +112,19 @@ fun AddScheduleScreen(
                     OutlinedTextField(
                         value = uiState.title,
                         onValueChange = viewModel::updateTitle,
-                        placeholder = { Text("무엇을 할까요?", fontSize = 16.sp) },
+                        placeholder = {
+                            Text(
+                                "무엇을 할까요?",
+                                fontSize = 16.sp,
+                                color = Color(0xFF757575) // 플레이스홀더 색상 더 진하게
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            fontSize = 18.sp,
+                            color = Color(0xFF212121), // 입력 텍스트 색상 명시
+                            fontWeight = FontWeight.Normal
+                        )
                     )
                 }
             }
