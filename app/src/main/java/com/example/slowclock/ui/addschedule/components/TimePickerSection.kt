@@ -110,24 +110,28 @@ fun TimePickerSection(
 }
 
 private fun getQuickTimeOptions(): List<Pair<String, Calendar>> {
-    val now = Calendar.getInstance()
-    val currentHour = now.get(Calendar.HOUR_OF_DAY)
-
     return listOf(
         "지금" to Calendar.getInstance(),
-        "30분 후" to Calendar.getInstance().apply { add(Calendar.MINUTE, 30) },
-        "1시간 후" to Calendar.getInstance().apply { add(Calendar.HOUR, 1) },
+        "30분 후" to Calendar.getInstance().apply {
+            add(Calendar.MINUTE, 30)
+        },
+        "1시간 후" to Calendar.getInstance().apply {
+            add(Calendar.HOUR, 1)
+        },
         "오후 2시" to Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 14)
             set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         },
         "오후 6시" to Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 18)
             set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         },
-        "저녁 8시" to Calendar.getInstance().apply {
+        "오후 8시" to Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 20)
             set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
         }
     )
 }

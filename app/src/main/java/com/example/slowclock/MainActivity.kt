@@ -57,12 +57,15 @@ class MainActivity : ComponentActivity() {
             Log.d("MAIN", "AuthManager 초기화 완료")
 
             val currentUser = FirebaseAuth.getInstance().currentUser
+            Log.d("AUTH", "현재 사용자 상태: ${currentUser?.uid}")
+            Log.d("AUTH", "이메일: ${currentUser?.email}")
+
             if (currentUser == null) {
                 Log.d("AUTH", "로그인 필요 - 구글 로그인 시작")
                 authManager.signIn()
             } else {
                 Log.d("AUTH", "이미 로그인됨: ${currentUser.uid}")
-                addDummyData() // 이미 로그인된 상태에서도 더미 데이터 체크
+                addDummyData()
             }
 
             enableEdgeToEdge()
