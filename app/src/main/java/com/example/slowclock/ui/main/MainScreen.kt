@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +51,7 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel(),
     shouldRefresh: Boolean = false,
     onAddSchedule: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}, // 이 줄 추가
     onRefreshHandled: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -92,10 +94,16 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    // 새로고침 버튼 추가
-                    IconButton(
-                        onClick = { viewModel.loadTodaySchedules() }
-                    ) {
+                    // 프로필 버튼 추가
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "내 정보",
+                            tint = Color(0xFF2196F3)
+                        )
+                    }
+                    // 기존 새로고침 버튼
+                    IconButton(onClick = { viewModel.loadTodaySchedules() }) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),

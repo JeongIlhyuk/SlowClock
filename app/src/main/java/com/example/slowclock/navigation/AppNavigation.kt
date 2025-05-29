@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.main.MainScreen
+import com.example.slowclock.ui.profile.ProfileScreen
 
 @Composable
 fun AppNavigation() {
@@ -25,6 +26,9 @@ fun AppNavigation() {
                 onAddSchedule = {
                     navController.navigate("add_schedule")
                 },
+                onNavigateToProfile = {
+                    navController.navigate("profile")
+                },
                 onRefreshHandled = {
                     navController.currentBackStackEntry
                         ?.savedStateHandle
@@ -32,6 +36,7 @@ fun AppNavigation() {
                 }
             )
         }
+
         composable("add_schedule") {
             AddScheduleScreen(
                 onNavigateBack = { success ->
@@ -42,6 +47,12 @@ fun AppNavigation() {
                     }
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable("profile") {
+            ProfileScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
