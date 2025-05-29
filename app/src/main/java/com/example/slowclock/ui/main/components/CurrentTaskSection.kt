@@ -1,8 +1,8 @@
+// app/src/main/java/com/example/slowclock/ui/main/components/CurrentTaskSection.kt
 package com.example.slowclock.ui.main.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +33,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CurrentTaskSection(
     schedule: Schedule,
@@ -81,14 +80,11 @@ fun CurrentTaskSection(
             )
         }
 
-        // 노란색 카드 (길게 누르기 추가)
+        // 노란색 카드 (클릭으로 세부정보)
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .combinedClickable(
-                    onClick = { }, // 현재 할 일은 클릭으로 완료 안 함
-                    onLongClick = onShowDetail
-                ),
+                .clickable { onShowDetail() }, // 클릭하면 세부정보
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFFFFF9C4)
             ),
@@ -143,12 +139,29 @@ fun CurrentTaskSection(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "길게 눌러서 상세보기",
+                                    text = "터치하여 상세보기",
                                     fontSize = 12.sp,
                                     color = Color(0xFFF57C00)
                                 )
                             }
                         }
+                    }
+
+                    // 진행 중 표시
+                    if (isOngoing(schedule, currentTime)) {
+                        Text(
+                            text = "진행중",
+                            fontSize = 14.sp,
+                            color = Color(0xFFF57C00),
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else {
+                        Text(
+                            text = "예정",
+                            fontSize = 14.sp,
+                            color = Color(0xFFF57C00),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }

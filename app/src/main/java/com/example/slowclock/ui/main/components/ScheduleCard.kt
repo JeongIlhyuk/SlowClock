@@ -1,9 +1,8 @@
 // app/src/main/java/com/example/slowclock/ui/main/components/ScheduleCard.kt
 package com.example.slowclock.ui.main.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +18,8 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +33,6 @@ import com.example.slowclock.data.model.Schedule
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScheduleCard(
     schedule: Schedule,
@@ -44,10 +44,7 @@ fun ScheduleCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onToggleComplete,
-                onLongClick = onShowDetail
-            ),
+            .clickable { onShowDetail() }, // 클릭하면 세부정보
         colors = CardDefaults.cardColors(
             containerColor = if (schedule.isCompleted) Color(0xFFE8F5E9) else Color(0xFFE3F2FD)
         ),
@@ -61,7 +58,7 @@ fun ScheduleCard(
             Box(
                 modifier = Modifier
                     .width(4.dp)
-                    .height(60.dp)
+                    .height(70.dp) // 체크박스 때문에 조금 높게
                     .background(
                         if (schedule.isCompleted) Color(0xFF4CAF50) else Color(0xFF2196F3)
                     )
@@ -114,14 +111,17 @@ fun ScheduleCard(
                     }
                 }
 
-                if (schedule.isCompleted) {
-                    Text(
-                        text = "완료",
-                        fontSize = 14.sp,
-                        color = Color(0xFF4CAF50),
-                        fontWeight = FontWeight.Medium
+                // 완료 체크박스 (크게)
+                Checkbox(
+                    checked = schedule.isCompleted,
+                    onCheckedChange = { onToggleComplete() },
+                    modifier = Modifier.size(32.dp), // 체크박스 크게
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color(0xFF4CAF50),
+                        uncheckedColor = Color(0xFF2196F3),
+                        checkmarkColor = Color.White
                     )
-                }
+                )
             }
         }
     }
