@@ -100,6 +100,7 @@ fun MainScreen(
                     }
                 },
                 actions = {
+
                     // 프로필 버튼 (더 크게)
                     IconButton(
                         onClick = onNavigateToProfile,
@@ -117,6 +118,7 @@ fun MainScreen(
                         onClick = { viewModel.loadTodaySchedules() },
                         modifier = Modifier.size(48.dp)
                     ) {
+
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
