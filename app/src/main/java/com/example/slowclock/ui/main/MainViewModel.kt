@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/main/MainViewModel.kt
 package com.example.slowclock.ui.main
 
 import android.util.Log
@@ -16,7 +17,8 @@ data class MainUiState(
     val completedCount: Int = 0,
     val totalCount: Int = 0,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val selectedScheduleForDetail: Schedule? = null
 )
 
 class MainViewModel : ViewModel() {
@@ -114,5 +116,14 @@ class MainViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun showScheduleDetail(scheduleId: String) {
+        val schedule = _uiState.value.todaySchedules.find { it.id == scheduleId }
+        _uiState.value = _uiState.value.copy(selectedScheduleForDetail = schedule)
+    }
+
+    fun hideScheduleDetail() {
+        _uiState.value = _uiState.value.copy(selectedScheduleForDetail = null)
     }
 }

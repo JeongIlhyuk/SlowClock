@@ -1,6 +1,8 @@
 package com.example.slowclock.ui.main.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.Card
@@ -30,8 +33,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CurrentTaskSection(schedule: Schedule) {
+fun CurrentTaskSection(
+    schedule: Schedule,
+    onShowDetail: () -> Unit
+) {
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
     val currentTime = System.currentTimeMillis()
 
@@ -74,9 +81,14 @@ fun CurrentTaskSection(schedule: Schedule) {
             )
         }
 
-        // 노란색 카드 (왼쪽 바 제거)
+        // 노란색 카드 (길게 누르기 추가)
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = { }, // 현재 할 일은 클릭으로 완료 안 함
+                    onLongClick = onShowDetail
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFFFFF9C4)
             ),
@@ -109,12 +121,35 @@ fun CurrentTaskSection(schedule: Schedule) {
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = schedule.title,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.Black
-                    )
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = schedule.title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Black
+                        )
+
+                        // 힌트 표시
+                        if (hasExtraInfo(schedule)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.MoreHoriz,
+                                    contentDescription = "상세정보 있음",
+                                    tint = Color(0xFFF57C00),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "길게 눌러서 상세보기",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFF57C00)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -125,4 +160,10 @@ private fun isOngoing(schedule: Schedule, currentTime: Long): Boolean {
     val startTime = schedule.startTime.toDate().time
     val endTime = schedule.endTime?.toDate()?.time ?: (startTime + 60 * 60 * 1000)
     return currentTime >= startTime && currentTime <= endTime
+}
+
+private fun hasExtraInfo(schedule: Schedule): Boolean {
+    return schedule.description.isNotBlank() ||
+            schedule.endTime != null ||
+            schedule.isRecurring
 }

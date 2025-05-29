@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/main/MainScreen.kt
 package com.example.slowclock.ui.main
 
 import androidx.compose.foundation.background
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.main.components.CurrentTaskSection
+import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.TodayScheduleSection
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -59,6 +61,15 @@ fun MainScreen(
             viewModel.loadTodaySchedules()
             onRefreshHandled()
         }
+    }
+
+    // 세부정보 다이얼로그
+    uiState.selectedScheduleForDetail?.let { schedule ->
+        ScheduleDetailDialog(
+            schedule = schedule,
+            onDismiss = { viewModel.hideScheduleDetail() },
+            onToggleComplete = { viewModel.toggleScheduleComplete(schedule.id) }
+        )
     }
 
     Scaffold(
@@ -130,7 +141,10 @@ fun MainScreen(
             // 지금 할 일
             uiState.currentSchedule?.let { schedule ->
                 item {
-                    CurrentTaskSection(schedule = schedule)
+                    CurrentTaskSection(
+                        schedule = schedule,
+                        onShowDetail = { viewModel.showScheduleDetail(schedule.id) }
+                    )
                 }
             }
 
@@ -138,7 +152,8 @@ fun MainScreen(
             item {
                 TodayScheduleSection(
                     schedules = uiState.todaySchedules,
-                    onToggleComplete = viewModel::toggleScheduleComplete
+                    onToggleComplete = viewModel::toggleScheduleComplete,
+                    onShowDetail = viewModel::showScheduleDetail
                 )
             }
 
