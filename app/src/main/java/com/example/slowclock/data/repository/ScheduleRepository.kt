@@ -58,7 +58,13 @@ class ScheduleRepository {
 
     // 일정 추가
     suspend fun addSchedule(schedule: Schedule): String? {
-        val uid = auth.currentUser?.uid ?: return null
+        val uid = auth.currentUser?.uid
+        Log.d("ScheduleRepo", "addSchedule 호출 - UID: $uid")
+
+        if (uid == null) {
+            Log.e("ScheduleRepo", "사용자가 로그인되지 않음")
+            return null
+        }
 
         val newSchedule = schedule.copy(
             userId = uid,
@@ -69,9 +75,13 @@ class ScheduleRepository {
         return try {
             val docRef = schedulesCollection.document()
             val scheduleWithId = newSchedule.copy(id = docRef.id)
+            Log.d("ScheduleRepo", "Firestore에 저장 시도: ${scheduleWithId.title}")
+
             docRef.set(scheduleWithId).await()
+            Log.d("ScheduleRepo", "저장 성공: ${docRef.id}")
             docRef.id
         } catch (e: Exception) {
+            Log.e("ScheduleRepo", "저장 실패", e)
             null
         }
     }

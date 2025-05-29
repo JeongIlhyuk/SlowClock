@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/main/components/TodayScheduleSection.kt
 package com.example.slowclock.ui.main.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +24,8 @@ import com.example.slowclock.data.model.Schedule
 @Composable
 fun TodayScheduleSection(
     schedules: List<Schedule>,
-    onToggleComplete: (String) -> Unit
+    onToggleComplete: (String) -> Unit,
+    onShowDetail: (String) -> Unit
 ) {
     Column {
         Row(
@@ -51,7 +53,8 @@ fun TodayScheduleSection(
             schedules.forEach { schedule ->
                 ScheduleCard(
                     schedule = schedule,
-                    onToggleComplete = { onToggleComplete(schedule.id) }
+                    onToggleComplete = { onToggleComplete(schedule.id) },
+                    onShowDetail = { onShowDetail(schedule.id) }
                 )
             }
         }
