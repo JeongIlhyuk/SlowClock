@@ -1,5 +1,4 @@
-// service/FCMService.kt
-package com.example.slowclock.service
+package com.example.slowclock.util.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
