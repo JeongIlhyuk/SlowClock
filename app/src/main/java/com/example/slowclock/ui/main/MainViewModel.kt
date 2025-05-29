@@ -30,7 +30,7 @@ class MainViewModel : ViewModel() {
 
     fun loadTodaySchedules() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
                 val schedules = scheduleRepository.getTodaySchedules()
                 val currentTime = System.currentTimeMillis()
@@ -66,7 +66,23 @@ class MainViewModel : ViewModel() {
                     !it.isCompleted
                 )
                 if (success) {
-                    loadTodaySchedules()
+                    // 즉시 UI 업데이트 (낙관적 업데이트)
+                    val updatedSchedules = _uiState.value.todaySchedules.map { s ->
+                        if (s.id == scheduleId) s.copy(isCompleted = !s.isCompleted) else s
+                    }
+
+                    val currentTime = System.currentTimeMillis()
+                    val currentSchedule = updatedSchedules.firstOrNull { schedule ->
+                        !schedule.isCompleted &&
+                                schedule.startTime.toDate().time <= currentTime &&
+                                (schedule.endTime?.toDate()?.time ?: Long.MAX_VALUE) > currentTime
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        todaySchedules = updatedSchedules,
+                        currentSchedule = currentSchedule,
+                        completedCount = updatedSchedules.count { it.isCompleted }
+                    )
                 }
             }
         }
