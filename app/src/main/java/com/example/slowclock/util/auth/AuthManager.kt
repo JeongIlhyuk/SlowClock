@@ -1,7 +1,8 @@
 // auth/AuthManager.kt
-package com.example.slowclock.auth
+package com.example.slowclock.util.auth
 
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -12,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 class AuthManager(private val activity: ComponentActivity) {
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private lateinit var signInLauncher: ActivityResultLauncher<android.content.Intent>
+    private lateinit var signInLauncher: ActivityResultLauncher<Intent>
 
     fun initialize(onSuccess: () -> Unit, onError: (String) -> Unit = {}) {
         signInLauncher = activity.registerForActivityResult(
