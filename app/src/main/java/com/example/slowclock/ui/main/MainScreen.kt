@@ -68,7 +68,6 @@ fun MainScreen(
         ScheduleDetailDialog(
             schedule = schedule,
             onDismiss = { viewModel.hideScheduleDetail() },
-            onToggleComplete = { viewModel.toggleScheduleComplete(schedule.id) }
         )
     }
 

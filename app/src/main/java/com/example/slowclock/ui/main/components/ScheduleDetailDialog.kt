@@ -37,8 +37,8 @@ import java.util.Locale
 @Composable
 fun ScheduleDetailDialog(
     schedule: Schedule,
-    onDismiss: () -> Unit,
-    onToggleComplete: () -> Unit
+    onDismiss: () -> Unit
+    // onToggleComplete 파라미터 제거
 ) {
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
     val dateFormat = SimpleDateFormat("M월 d일", Locale.KOREAN)
@@ -178,7 +178,7 @@ fun ScheduleDetailDialog(
                     }
                 }
 
-                // 완료 상태
+                // 완료 상태 (정보만 표시)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -191,7 +191,7 @@ fun ScheduleDetailDialog(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (schedule.isCompleted) "완료됨" else "미완료",
+                        text = if (schedule.isCompleted) "✅ 완료됨" else "⏳ 미완료",
                         fontSize = 16.sp,
                         color = if (schedule.isCompleted) Color(0xFF4CAF50) else Color.Gray,
                         fontWeight = FontWeight.Medium
@@ -200,38 +200,17 @@ fun ScheduleDetailDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 완료 토글 버튼
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // 닫기 버튼만
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "닫기",
-                            fontSize = 16.sp,
-                            color = Color.Gray
-                        )
-                    }
-
-                    TextButton(
-                        onClick = {
-                            onToggleComplete()
-                            onDismiss()
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = if (schedule.isCompleted) "미완료로 변경" else "완료로 표시",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (schedule.isCompleted) Color(0xFFFF9800) else Color(
-                                0xFF4CAF50
-                            )
-                        )
-                    }
+                    Text(
+                        text = "확인",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2196F3)
+                    )
                 }
             }
         }
