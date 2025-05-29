@@ -1,5 +1,6 @@
 package com.example.slowclock.ui.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
@@ -35,11 +36,37 @@ class MainViewModel : ViewModel() {
                 val schedules = scheduleRepository.getTodaySchedules()
                 val currentTime = System.currentTimeMillis()
 
-                val currentSchedule = schedules.firstOrNull { schedule ->
-                    !schedule.isCompleted &&
-                            schedule.startTime.toDate().time <= currentTime &&
-                            (schedule.endTime?.toDate()?.time ?: Long.MAX_VALUE) > currentTime
-                }
+                val currentSchedule = schedules
+                    .filter { !it.isCompleted }
+                    .let { incompleteSchedules ->
+                        // 1단계: 현재 진행 중인 일정들
+                        val ongoingSchedules = incompleteSchedules.filter { schedule ->
+                            val startTime = schedule.startTime.toDate().time
+                            val endTime =
+                                schedule.endTime?.toDate()?.time ?: (startTime + 60 * 60 * 1000)
+                            currentTime >= startTime && currentTime <= endTime
+                        }
+
+                        if (ongoingSchedules.isNotEmpty()) {
+                            // 진행 중: 끝나는 시간 빠른 순
+                            ongoingSchedules.minByOrNull { schedule ->
+                                schedule.endTime?.toDate()?.time
+                                    ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+                            }
+                        } else {
+                            // 진행 중 없음: 시작 시간 빠른 순 → 끝나는 시간 빠른 순
+                            incompleteSchedules
+                                .filter { it.startTime.toDate().time > currentTime }
+                                .sortedWith(
+                                    compareBy<Schedule> { it.startTime.toDate().time }
+                                        .thenBy { schedule ->
+                                            schedule.endTime?.toDate()?.time
+                                                ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+                                        }
+                                )
+                                .firstOrNull()
+                        }
+                    }
 
                 _uiState.value = MainUiState(
                     todaySchedules = schedules,
@@ -49,9 +76,10 @@ class MainViewModel : ViewModel() {
                     isLoading = false
                 )
             } catch (e: Exception) {
+                Log.e("MainViewModel", "일정 로드 실패", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "일정을 불러오는데 실패했습니다"
+                    error = "일정을 불러오는데 실패했습니다: ${e.message}"
                 )
             }
         }

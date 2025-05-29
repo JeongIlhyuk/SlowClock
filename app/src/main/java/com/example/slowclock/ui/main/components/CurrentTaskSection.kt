@@ -27,11 +27,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slowclock.data.model.Schedule
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
 fun CurrentTaskSection(schedule: Schedule) {
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
+    val currentTime = System.currentTimeMillis()
+
+    val displayTime = if (isOngoing(schedule, currentTime)) {
+        "~${
+            timeFormat.format(
+                schedule.endTime?.toDate() ?: Date(schedule.startTime.toDate().time + 60 * 60 * 1000)
+            )
+        }"
+    } else {
+        timeFormat.format(schedule.startTime.toDate())
+    }
 
     Column {
         // 섹션 헤더
@@ -52,9 +64,11 @@ fun CurrentTaskSection(schedule: Schedule) {
                 fontWeight = FontWeight.Medium,
                 color = Color.Black
             )
+
             Spacer(modifier = Modifier.weight(1f))
+
             Text(
-                text = timeFormat.format(schedule.startTime.toDate()),
+                text = displayTime,
                 fontSize = 14.sp,
                 color = Color.Gray
             )
@@ -105,4 +119,10 @@ fun CurrentTaskSection(schedule: Schedule) {
             }
         }
     }
+}
+
+private fun isOngoing(schedule: Schedule, currentTime: Long): Boolean {
+    val startTime = schedule.startTime.toDate().time
+    val endTime = schedule.endTime?.toDate()?.time ?: (startTime + 60 * 60 * 1000)
+    return currentTime >= startTime && currentTime <= endTime
 }
