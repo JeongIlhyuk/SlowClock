@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/data/DummyDataManager.kt
 package com.example.slowclock.data
 
 import android.util.Log
@@ -11,28 +12,45 @@ class DummyDataManager {
 
     suspend fun addDummyDataIfNeeded() {
         try {
-            val existing = scheduleRepository.getTodaySchedules()
+            // 새로운 ScheduleResult 형태로 수정
+            when (val result = scheduleRepository.getTodaySchedules()) {
+                is ScheduleRepository.ScheduleResult.Success -> {
+                    val existing = result.data
 
-            if (existing.isEmpty()) {
-                Log.d("DUMMY", "일정 없음, 더미 데이터 추가")
+                    if (existing.isEmpty()) {
+                        Log.d("DUMMY", "일정 없음, 더미 데이터 추가")
 
-                val schedules = listOf(
-                    Schedule(title = "아침 운동", startTime = getTodayTime(9, 0)),
-                    Schedule(
-                        title = "점심 약속",
-                        startTime = getTodayTime(12, 30),
-                        isCompleted = true
-                    ),
-                    Schedule(title = "저녁 산책", startTime = getTodayTime(18, 0)),
-                    Schedule(title = "지금 할 일", startTime = Timestamp.now())
-                )
+                        val schedules = listOf(
+                            Schedule(title = "아침 운동", startTime = getTodayTime(9, 0)),
+                            Schedule(
+                                title = "점심 약속",
+                                startTime = getTodayTime(12, 30),
+                                isCompleted = true
+                            ),
+                            Schedule(title = "저녁 산책", startTime = getTodayTime(18, 0)),
+                            Schedule(title = "지금 할 일", startTime = Timestamp.now())
+                        )
 
-                schedules.forEach {
-                    scheduleRepository.addSchedule(it)
+                        schedules.forEach { schedule ->
+                            when (val addResult = scheduleRepository.addSchedule(schedule)) {
+                                is ScheduleRepository.ScheduleResult.Success -> {
+                                    Log.d("DUMMY", "더미 일정 추가 성공: ${schedule.title}")
+                                }
+
+                                is ScheduleRepository.ScheduleResult.Error -> {
+                                    Log.e("DUMMY", "더미 일정 추가 실패: ${addResult.error.message}")
+                                }
+                            }
+                        }
+                        Log.d("DUMMY", "더미 데이터 추가 완료")
+                    } else {
+                        Log.d("DUMMY", "이미 일정 있음: ${existing.size}개")
+                    }
                 }
-                Log.d("DUMMY", "더미 데이터 추가 완료")
-            } else {
-                Log.d("DUMMY", "이미 일정 있음: ${existing.size}개")
+
+                is ScheduleRepository.ScheduleResult.Error -> {
+                    Log.e("DUMMY", "일정 조회 실패: ${result.error.message}")
+                }
             }
         } catch (e: Exception) {
             Log.e("DUMMY", "더미 데이터 추가 실패", e)

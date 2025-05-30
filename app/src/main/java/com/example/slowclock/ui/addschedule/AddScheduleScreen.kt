@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -29,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -280,12 +282,34 @@ fun AddScheduleScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
-                    Text(
-                        text = uiState.error!!,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(20.dp)
-                    )
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = uiState.error!!.message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+
+                        if (uiState.canRetry) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.clearError() },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("닫기")
+                                }
+
+                                Button(
+                                    onClick = { viewModel.retryLastAction() },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("다시 시도")
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

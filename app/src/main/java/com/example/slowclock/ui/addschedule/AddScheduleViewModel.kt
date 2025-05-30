@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/addschedule/AddScheduleViewModel.kt
 package com.example.slowclock.ui.addschedule
 
 import android.util.Log
@@ -5,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
 import com.example.slowclock.data.repository.ScheduleRepository
+import com.example.slowclock.util.AppError
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,17 +17,18 @@ import java.util.Calendar
 
 data class AddScheduleUiState(
     val title: String = "",
-    val description: String = "", // 추가
+    val description: String = "",
     val selectedTime: Calendar = Calendar.getInstance(),
-    val endTime: Calendar? = null, // 추가
-    val isRecurring: Boolean = false, // 추가
-    val recurringType: String = "daily", // 추가
-    val showTimePicker: Boolean = false, // 추가
-    val showEndTimePicker: Boolean = false, // 추가
+    val endTime: Calendar? = null,
+    val isRecurring: Boolean = false,
+    val recurringType: String = "daily",
+    val showTimePicker: Boolean = false,
+    val showEndTimePicker: Boolean = false,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
-    val error: String? = null,
-    val canSave: Boolean = false
+    val error: AppError? = null,
+    val canSave: Boolean = false,
+    val canRetry: Boolean = false
 )
 
 class AddScheduleViewModel : ViewModel() {
@@ -42,7 +45,6 @@ class AddScheduleViewModel : ViewModel() {
         )
     }
 
-    // 새로운 함수들 추가
     fun updateDescription(description: String) {
         _uiState.value = _uiState.value.copy(description = description)
     }
@@ -79,13 +81,39 @@ class AddScheduleViewModel : ViewModel() {
 
     fun saveSchedule() {
         val currentTitle = _uiState.value.title.trim()
-        if (currentTitle.isBlank()) {
-            _uiState.value = _uiState.value.copy(error = "할 일을 입력해주세요")
-            return
+
+        // 클라이언트 측 검증 (copy 함수 대신 직접 AppError.GeneralError 사용)
+        when {
+            currentTitle.isBlank() -> {
+                _uiState.value = _uiState.value.copy(
+                    error = AppError.GeneralError("할 일을 입력해주세요") // 수정
+                )
+                return
+            }
+
+            currentTitle.length > 100 -> {
+                _uiState.value = _uiState.value.copy(
+                    error = AppError.GeneralError("제목이 너무 깁니다 (최대 100자)") // 수정
+                )
+                return
+            }
+
+            _uiState.value.endTime?.let { end ->
+                end.timeInMillis <= _uiState.value.selectedTime.timeInMillis
+            } == true -> {
+                _uiState.value = _uiState.value.copy(
+                    error = AppError.GeneralError("종료 시간은 시작 시간보다 늦어야 합니다") // 수정
+                )
+                return
+            }
         }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                error = null,
+                canRetry = false
+            )
 
             try {
                 Log.d("AddSchedule", "일정 저장 시작: $currentTitle")
@@ -93,34 +121,50 @@ class AddScheduleViewModel : ViewModel() {
 
                 val schedule = Schedule(
                     title = currentTitle,
-                    description = _uiState.value.description.trim(), // 추가
+                    description = _uiState.value.description.trim(),
                     startTime = Timestamp(_uiState.value.selectedTime.time),
-                    endTime = _uiState.value.endTime?.let { Timestamp(it.time) }, // 추가
-                    isRecurring = _uiState.value.isRecurring, // 추가
-                    recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null // 추가
+                    endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
+                    isRecurring = _uiState.value.isRecurring,
+                    recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
                 )
 
-                val result = scheduleRepository.addSchedule(schedule)
-                Log.d("AddSchedule", "저장 결과: $result")
+                when (val result = scheduleRepository.addSchedule(schedule)) {
+                    is ScheduleRepository.ScheduleResult.Success -> {
+                        Log.d("AddSchedule", "저장 성공: ${result.data}")
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            isSuccess = true
+                        )
+                    }
 
-                if (result != null) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isSuccess = true
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = "일정 저장에 실패했습니다"
-                    )
+                    is ScheduleRepository.ScheduleResult.Error -> {
+                        Log.e("AddSchedule", "저장 실패: ${result.error.message}")
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            error = result.error,
+                            canRetry = true
+                        )
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("AddSchedule", "저장 실패", e)
+                Log.e("AddSchedule", "예상치 못한 저장 실패", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "일정 저장 중 오류가 발생했습니다: ${e.message}"
+                    error = AppError.GeneralError("일정 저장 중 문제가 발생했습니다"), // 수정
+                    canRetry = true
                 )
             }
         }
     }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null, canRetry = false)
+    }
+
+    fun retryLastAction() {
+        clearError()
+        saveSchedule()
+    }
 }
+
+// copy 확장 함수 완전히 제거 (더 이상 필요 없음)

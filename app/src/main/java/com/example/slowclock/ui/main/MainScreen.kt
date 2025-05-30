@@ -189,7 +189,12 @@ fun MainScreen(
             // 에러 메시지
             if (uiState.error != null) {
                 item {
-                    ErrorCard(error = uiState.error!!)
+                    ErrorCard(
+                        error = uiState.error!!,
+                        canRetry = uiState.canRetry,
+                        onRetry = { viewModel.retryLastAction() },
+                        onDismiss = { viewModel.clearError() }
+                    )
                 }
             }
         }
