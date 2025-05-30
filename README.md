@@ -5,11 +5,23 @@
 
 ## 🚨 개발 환경 설정
 
-- google-services.json
-  파일은 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
-  에서 받아 `app`에 넣기
-- https://console.firebase.google.com/project/slow-clock-scheduler/settings/serviceaccounts/adminsdkservice_account.json
-  에서 Node.js로 파일을 받아 이름을 service_account.json로 변경한 뒤 `app/src/main/res/raw/`에 넣기
+### 1. google-services.json (Firebase 기본 설정)
+
+- **용도**: Firebase Auth, Firestore 등 기본 Firebase 서비스용
+- **위치**: `app/google-services.json`
+- **다운로드
+  **: https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
+
+### 2. service_account.json (AI 기능 전용)
+
+- **용도**: Vertex AI API 호출용
+- **위치**: `app/src/main/res/raw/service_account.json`
+- **다운로드**:
+    1. https://console.firebase.google.com/project/slow-clock-scheduler/settings/serviceaccounts/adminsdk
+       접속
+    2. "새 비공개 키 생성" 클릭
+    3. Node.js 선택 → 키 생성
+    4. 다운로드된 파일을 `service_account.json`로 이름 변경
 - 본인 디버그용 SHA-1
   키를 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에 등록
