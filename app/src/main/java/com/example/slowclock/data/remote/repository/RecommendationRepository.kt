@@ -1,4 +1,4 @@
-package com.example.slowclock.data.repository
+package com.example.slowclock.data.remote.repository
 
 import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.model.ScheduleRecommendation
