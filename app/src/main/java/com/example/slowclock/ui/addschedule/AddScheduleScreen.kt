@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/addschedule/AddScheduleScreen.kt
 package com.example.slowclock.ui.addschedule
 
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,6 +27,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,10 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.addschedule.components.RecommendationPlaceholder
 import com.example.slowclock.ui.addschedule.components.TimePickerSection
@@ -67,33 +67,42 @@ fun AddScheduleScreen(
                 title = {
                     Text(
                         text = "일정 추가",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { onNavigateBack(false) }) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
-                            tint = Color(0xFF2196F3)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.saveSchedule() },
-                containerColor = if (uiState.canSave) Color(0xFF4CAF50) else Color.Gray
+                containerColor = if (uiState.canSave)
+                    MaterialTheme.colorScheme.secondary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.size(64.dp)
             ) {
                 Icon(
                     Icons.Default.Check,
                     contentDescription = "저장",
-                    tint = Color.White
+                    tint = if (uiState.canSave)
+                        MaterialTheme.colorScheme.onSecondary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -103,21 +112,21 @@ fun AddScheduleScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
             // 일정 제목 입력
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = "할 일",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
                     OutlinedTextField(
                         value = uiState.title,
@@ -125,26 +134,24 @@ fun AddScheduleScreen(
                         placeholder = {
                             Text(
                                 "무엇을 할까요?",
-                                fontSize = 16.sp,
-                                color = Color(0xFF757575)
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        textStyle = androidx.compose.ui.text.TextStyle(
-                            fontSize = 18.sp,
-                            color = Color(0xFF212121),
-                            fontWeight = FontWeight.Normal
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // 설명 입력 필드 추가
+                    // 설명 입력 필드
                     Text(
                         text = "상세 내용 (선택사항)",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
                     OutlinedTextField(
                         value = uiState.description,
@@ -152,21 +159,20 @@ fun AddScheduleScreen(
                         placeholder = {
                             Text(
                                 "자세한 내용을 입력하세요",
-                                fontSize = 14.sp,
-                                color = Color(0xFF757575)
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 3,
-                        textStyle = androidx.compose.ui.text.TextStyle(
-                            fontSize = 16.sp,
-                            color = Color(0xFF212121)
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
             }
 
-            // 시간 선택 (개선된 버전)
+            // 시간 선택
             TimePickerSection(
                 selectedTime = uiState.selectedTime,
                 endTime = uiState.endTime,
@@ -181,15 +187,15 @@ fun AddScheduleScreen(
             // 반복 일정 설정
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = "반복 설정",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     Row(
@@ -202,13 +208,14 @@ fun AddScheduleScreen(
                         )
                         Text(
                             text = "반복 일정으로 설정",
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 8.dp)
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(start = 12.dp)
                         )
                     }
 
                     if (uiState.isRecurring) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         var expanded by remember { mutableStateOf(false) }
                         val recurringOptions = listOf(
@@ -226,11 +233,17 @@ fun AddScheduleScreen(
                                     ?: "매일",
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("반복 주기") },
+                                label = {
+                                    Text(
+                                        "반복 주기",
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                                 modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                    .fillMaxWidth(),
+                                textStyle = MaterialTheme.typography.bodyLarge
                             )
 
                             ExposedDropdownMenu(
@@ -239,7 +252,12 @@ fun AddScheduleScreen(
                             ) {
                                 recurringOptions.forEach { (value, label) ->
                                     DropdownMenuItem(
-                                        text = { Text(label) },
+                                        text = {
+                                            Text(
+                                                label,
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                        },
                                         onClick = {
                                             viewModel.updateRecurringType(value)
                                             expanded = false
@@ -252,20 +270,21 @@ fun AddScheduleScreen(
                 }
             }
 
-            // ==================== 추천 기능 영역 (추후 구현 예정) ====================
+            // 추천 기능 영역
             RecommendationPlaceholder()
-            // ================================================================
 
             // 에러 메시지
             if (uiState.error != null) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
                 ) {
                     Text(
                         text = uiState.error!!,
-                        color = Color(0xFFD32F2F),
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(16.dp)
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(20.dp)
                     )
                 }
             }
@@ -273,19 +292,22 @@ fun AddScheduleScreen(
             // 로딩 상태
             if (uiState.isLoading) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.padding(20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color(0xFF2196F3)
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "일정을 저장하는 중...",
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
