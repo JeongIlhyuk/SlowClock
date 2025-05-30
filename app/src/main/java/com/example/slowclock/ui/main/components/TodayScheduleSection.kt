@@ -11,14 +11,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.slowclock.data.model.Schedule
 
 @Composable
@@ -30,25 +28,24 @@ fun TodayScheduleSection(
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 12.dp) // 8dp → 12dp
         ) {
             Icon(
                 Icons.Outlined.CalendarToday,
                 contentDescription = null,
-                tint = Color(0xFF2196F3),
-                modifier = Modifier.size(20.dp)
+                tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
+                modifier = Modifier.size(24.dp) // 20dp → 24dp
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp)) // 4dp → 8dp
             Text(
                 text = "오늘의 일정",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
+                style = MaterialTheme.typography.titleLarge, // fontSize 대신 style 사용
+                color = MaterialTheme.colorScheme.onSurface // 하드코딩 색상 제거
             )
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp) // 8dp → 12dp
         ) {
             schedules.forEach { schedule ->
                 ScheduleCard(
