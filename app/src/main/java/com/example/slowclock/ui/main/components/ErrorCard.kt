@@ -57,7 +57,7 @@ fun ErrorCard(
                     is AppError.NotFoundError -> "🔍"
                     is AppError.SaveError -> "💾"
                     is AppError.StorageFullError -> "💽"
-                    is AppError.GeneralError -> "알 수 없는 오류"
+                    is AppError.GeneralError -> "⚠️"
                 },
                 fontSize = 48.sp
             )
