@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.slowclock.util.AppError
+import com.example.slowclock.error.AppError
 
 @Composable
 fun ErrorCard(

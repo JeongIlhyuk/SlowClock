@@ -1,5 +1,5 @@
 // auth/AuthManager.kt
-package com.example.slowclock.util.auth
+package com.example.slowclock.auth
 
 import android.app.Activity
 import android.content.Intent

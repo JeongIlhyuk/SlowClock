@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/slowclock/util/ErrorType.kt
-package com.example.slowclock.util
+package com.example.slowclock.error
 
 sealed class AppError(val message: String) {
     // 네트워크 관련 에러

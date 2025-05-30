@@ -26,9 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.slowclock.core.hasExtraInfo
+import com.example.slowclock.core.isOngoing
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.util.hasExtraInfo
-import com.example.slowclock.util.isOngoing
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

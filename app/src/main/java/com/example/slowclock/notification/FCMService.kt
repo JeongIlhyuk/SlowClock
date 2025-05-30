@@ -1,4 +1,4 @@
-package com.example.slowclock.util.notification
+package com.example.slowclock.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

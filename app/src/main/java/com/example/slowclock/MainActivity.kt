@@ -7,10 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import com.example.slowclock.auth.AuthManager
 import com.example.slowclock.data.DummyDataManager
 import com.example.slowclock.navigation.AppNavigation
 import com.example.slowclock.ui.theme.SlowClockTheme
-import com.example.slowclock.util.auth.AuthManager
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
