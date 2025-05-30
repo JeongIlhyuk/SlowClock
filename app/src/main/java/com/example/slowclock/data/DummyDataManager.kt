@@ -3,7 +3,7 @@ package com.example.slowclock.data
 
 import android.util.Log
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.data.repository.ScheduleRepository
+import com.example.slowclock.data.remote.repository.ScheduleRepository
 import com.google.firebase.Timestamp
 import java.util.Calendar
 

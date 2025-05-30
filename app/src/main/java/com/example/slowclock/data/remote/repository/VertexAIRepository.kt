@@ -1,15 +1,15 @@
-package com.example.slowclock.data.repository
+package com.example.slowclock.data.remote.repository
 
 import android.content.Context
 import android.util.Log
 import com.example.slowclock.R
-import com.example.slowclock.config.AIConfig
-import com.example.slowclock.data.api.Content
-import com.example.slowclock.data.api.GenerateContentRequest
-import com.example.slowclock.data.api.GenerationConfig
-import com.example.slowclock.data.api.Part
-import com.example.slowclock.data.api.VertexAIService
-import com.example.slowclock.data.api.VertexAIServiceFactory
+import com.example.slowclock.constants.AIConfig
+import com.example.slowclock.data.remote.api.Content
+import com.example.slowclock.data.remote.api.GenerateContentRequest
+import com.example.slowclock.data.remote.api.GenerationConfig
+import com.example.slowclock.data.remote.api.Part
+import com.example.slowclock.data.remote.api.VertexAIService
+import com.example.slowclock.data.remote.api.VertexAIServiceFactory
 import com.google.auth.oauth2.ServiceAccountCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

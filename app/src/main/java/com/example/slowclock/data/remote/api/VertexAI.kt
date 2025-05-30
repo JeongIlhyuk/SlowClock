@@ -1,4 +1,4 @@
-package com.example.slowclock.data.api
+package com.example.slowclock.data.remote.api
 
 import retrofit2.http.Body
 import retrofit2.http.Header

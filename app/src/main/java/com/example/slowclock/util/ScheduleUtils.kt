@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/slowclock/util/ScheduleUtils.kt
-package com.example.slowclock.core
+package com.example.slowclock.util
 
 import com.example.slowclock.data.model.Schedule
 

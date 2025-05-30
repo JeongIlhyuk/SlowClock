@@ -31,10 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.slowclock.ui.common.components.ErrorCard
+import com.example.slowclock.ui.common.dialog.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.CurrentTaskSection
-import com.example.slowclock.ui.main.components.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.EmptyStateCard
-import com.example.slowclock.ui.main.components.ErrorCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.TodayScheduleSection
 import com.example.slowclock.ui.main.components.TodaySummaryCard

@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name=".AITestActivity"
+            android:name=".debug.AITestActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

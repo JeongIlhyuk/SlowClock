@@ -1,4 +1,4 @@
-package com.example.slowclock.config
+package com.example.slowclock.constants
 
 // Config.kt 또는 BuildConfig에 추가
 object AIConfig {

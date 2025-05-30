@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/slowclock/ui/main/components/ErrorCard.kt
-package com.example.slowclock.ui.main.components
+package com.example.slowclock.ui.common.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.slowclock.error.AppError
+import com.example.slowclock.util.AppError
 
 @Composable
 fun ErrorCard(

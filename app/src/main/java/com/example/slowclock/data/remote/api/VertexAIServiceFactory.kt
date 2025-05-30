@@ -1,4 +1,4 @@
-package com.example.slowclock.data.api
+package com.example.slowclock.data.remote.api
 
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

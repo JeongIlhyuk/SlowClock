@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.slowclock.ui.common.dialog.TimePickerDialog
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

@@ -5,8 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.data.repository.ScheduleRepository
-import com.example.slowclock.error.AppError
+import com.example.slowclock.data.remote.repository.ScheduleRepository
+import com.example.slowclock.util.AppError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

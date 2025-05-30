@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/slowclock/ui/main/components/DeleteConfirmDialog.kt
-package com.example.slowclock.ui.main.components
+package com.example.slowclock.ui.common.dialog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

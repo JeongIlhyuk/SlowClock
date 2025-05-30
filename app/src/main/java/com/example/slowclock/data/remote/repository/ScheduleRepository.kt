@@ -1,11 +1,11 @@
 // app/src/main/java/com/example/slowclock/data/repository/ScheduleRepository.kt
-package com.example.slowclock.data.repository
+package com.example.slowclock.data.remote.repository
 
 import android.util.Log
 import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.error.AppError
-import com.example.slowclock.error.toAppError
+import com.example.slowclock.util.AppError
+import com.example.slowclock.util.toAppError
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException

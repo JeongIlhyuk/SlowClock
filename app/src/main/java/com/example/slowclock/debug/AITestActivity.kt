@@ -1,4 +1,4 @@
-package com.example.slowclock
+package com.example.slowclock.debug
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,7 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.slowclock.data.repository.VertexAIRepository
+import com.example.slowclock.data.remote.repository.VertexAIRepository
 import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
 
