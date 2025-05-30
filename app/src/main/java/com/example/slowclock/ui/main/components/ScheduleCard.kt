@@ -36,7 +36,7 @@ import java.util.Locale
 fun ScheduleCard(
     schedule: Schedule,
     onToggleComplete: () -> Unit,
-    onShowDetail: () -> Unit
+    onShowDetail: () -> Unit,
 ) {
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
 

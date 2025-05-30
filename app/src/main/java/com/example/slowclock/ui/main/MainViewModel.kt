@@ -20,7 +20,9 @@ data class MainUiState(
     val isLoading: Boolean = false,
     val error: AppError? = null, // String → AppError 변경
     val selectedScheduleForDetail: Schedule? = null,
-    val canRetry: Boolean = false // 재시도 가능 여부 추가
+    val canRetry: Boolean = false, // 재시도 가능 여부 추가
+    val showDeleteConfirmDialog: Boolean = false,
+    val scheduleToDelete: Schedule? = null
 )
 
 class MainViewModel : ViewModel() {
@@ -171,5 +173,55 @@ class MainViewModel : ViewModel() {
     fun retryLastAction() {
         clearError()
         loadTodaySchedules()
+    }
+
+    fun showDeleteConfirmDialog(scheduleId: String) {
+        val schedule = _uiState.value.todaySchedules.find { it.id == scheduleId }
+        _uiState.value = _uiState.value.copy(
+            showDeleteConfirmDialog = true,
+            scheduleToDelete = schedule
+        )
+    }
+
+    fun hideDeleteConfirmDialog() {
+        _uiState.value = _uiState.value.copy(
+            showDeleteConfirmDialog = false,
+            scheduleToDelete = null
+        )
+    }
+
+    fun deleteSchedule(scheduleId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                error = null,
+                showDeleteConfirmDialog = false,
+                scheduleToDelete = null
+            )
+
+            when (val result = scheduleRepository.deleteSchedule(scheduleId)) {
+                is ScheduleRepository.ScheduleResult.Success -> {
+                    Log.d("MainViewModel", "일정 삭제 성공")
+                    // 목록에서 제거
+                    val updatedSchedules =
+                        _uiState.value.todaySchedules.filter { it.id != scheduleId }
+                    _uiState.value = _uiState.value.copy(
+                        todaySchedules = updatedSchedules,
+                        totalCount = updatedSchedules.size,
+                        completedCount = updatedSchedules.count { it.isCompleted },
+                        isLoading = false
+                    )
+                }
+
+                is ScheduleRepository.ScheduleResult.Error -> {
+                    Log.e("MainViewModel", "일정 삭제 실패: ${result.error.message}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error,
+                        canRetry = true
+                    )
+                }
+            }
+        }
     }
 }

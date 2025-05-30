@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.main.components.CurrentTaskSection
+import com.example.slowclock.ui.main.components.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ErrorCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
@@ -66,6 +67,25 @@ fun MainScreen(
         ScheduleDetailDialog(
             schedule = schedule,
             onDismiss = { viewModel.hideScheduleDetail() },
+            onEdit = {
+                // TODO: 편집 화면으로 이동
+                viewModel.hideScheduleDetail()
+            },
+            onDelete = {
+                viewModel.hideScheduleDetail()
+                viewModel.showDeleteConfirmDialog(schedule.id) // 이렇게 수정
+            }
+        )
+    }
+
+    // 삭제 확인 다이얼로그 (이것도 필요함)
+    if (uiState.showDeleteConfirmDialog && uiState.scheduleToDelete != null) {
+        DeleteConfirmDialog(
+            schedule = uiState.scheduleToDelete!!,
+            onConfirm = {
+                viewModel.deleteSchedule(uiState.scheduleToDelete!!.id)
+            },
+            onDismiss = { viewModel.hideDeleteConfirmDialog() }
         )
     }
 
@@ -175,7 +195,7 @@ fun MainScreen(
                 TodayScheduleSection(
                     schedules = uiState.todaySchedules,
                     onToggleComplete = viewModel::toggleScheduleComplete,
-                    onShowDetail = viewModel::showScheduleDetail
+                    onShowDetail = viewModel::showScheduleDetail,
                 )
             }
 

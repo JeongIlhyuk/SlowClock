@@ -167,9 +167,102 @@ class ScheduleRepository {
         }
     }
 
-    // 사용하지 않는 함수들 제거:
-    // - updateSchedule
-    // - deleteSchedule
-    // - getScheduleById
-    // 필요할 때 다시 추가하면 됨
+    suspend fun updateSchedule(schedule: Schedule): ScheduleResult<Unit> {
+        if (schedule.id.isBlank()) {
+            return ScheduleResult.Error(AppError.InvalidDataError)
+        }
+
+        if (schedule.title.isBlank()) {
+            return ScheduleResult.Error(AppError.InvalidDataError)
+        }
+
+        val updatedSchedule = schedule.copy(
+            updatedAt = Timestamp.now()
+        )
+
+        return try {
+            schedulesCollection.document(schedule.id)
+                .set(updatedSchedule)
+                .await()
+
+            Log.d("ScheduleRepo", "일정 수정 성공: ${schedule.id}")
+            ScheduleResult.Success(Unit)
+
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ScheduleRepo", "일정 수정 실패: ${e.code}", e)
+            val error = when (e.code) {
+                FirebaseFirestoreException.Code.NOT_FOUND -> AppError.NotFoundError
+                FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.PermissionError
+                FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.NetworkError
+                else -> AppError.SaveError
+            }
+            ScheduleResult.Error(error)
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "일정 수정 중 예상치 못한 에러", e)
+            ScheduleResult.Error(AppError.SaveError)
+        }
+    }
+
+    // 일정 삭제
+    suspend fun deleteSchedule(scheduleId: String): ScheduleResult<Unit> {
+        if (scheduleId.isBlank()) {
+            return ScheduleResult.Error(AppError.InvalidDataError)
+        }
+
+        return try {
+            schedulesCollection.document(scheduleId)
+                .delete()
+                .await()
+
+            Log.d("ScheduleRepo", "일정 삭제 성공: $scheduleId")
+            ScheduleResult.Success(Unit)
+
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ScheduleRepo", "일정 삭제 실패: ${e.code}", e)
+            val error = when (e.code) {
+                FirebaseFirestoreException.Code.NOT_FOUND -> AppError.NotFoundError
+                FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.PermissionError
+                FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.NetworkError
+                else -> AppError.GeneralError("삭제에 실패했습니다")
+            }
+            ScheduleResult.Error(error)
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "일정 삭제 중 예상치 못한 에러", e)
+            ScheduleResult.Error(e.toAppError())
+        }
+    }
+
+    // ID로 일정 가져오기 (편집용)
+    suspend fun getScheduleById(scheduleId: String): ScheduleResult<Schedule> {
+        if (scheduleId.isBlank()) {
+            return ScheduleResult.Error(AppError.InvalidDataError)
+        }
+
+        return try {
+            val document = schedulesCollection.document(scheduleId).get().await()
+
+            if (!document.exists()) {
+                return ScheduleResult.Error(AppError.NotFoundError)
+            }
+
+            val schedule = document.toObject(Schedule::class.java)
+            if (schedule != null) {
+                ScheduleResult.Success(schedule)
+            } else {
+                ScheduleResult.Error(AppError.InvalidDataError)
+            }
+
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ScheduleRepo", "일정 조회 실패: ${e.code}", e)
+            val error = when (e.code) {
+                FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.NetworkError
+                FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.PermissionError
+                else -> AppError.NotFoundError
+            }
+            ScheduleResult.Error(error)
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "일정 조회 중 예상치 못한 에러", e)
+            ScheduleResult.Error(e.toAppError())
+        }
+    }
 }

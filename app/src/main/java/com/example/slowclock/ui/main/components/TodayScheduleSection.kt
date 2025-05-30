@@ -23,7 +23,7 @@ import com.example.slowclock.data.model.Schedule
 fun TodayScheduleSection(
     schedules: List<Schedule>,
     onToggleComplete: (String) -> Unit,
-    onShowDetail: (String) -> Unit
+    onShowDetail: (String) -> Unit,
 ) {
     Column {
         Row(
@@ -51,7 +51,7 @@ fun TodayScheduleSection(
                 ScheduleCard(
                     schedule = schedule,
                     onToggleComplete = { onToggleComplete(schedule.id) },
-                    onShowDetail = { onShowDetail(schedule.id) }
+                    onShowDetail = { onShowDetail(schedule.id) },
                 )
             }
         }
