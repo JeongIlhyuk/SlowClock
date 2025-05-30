@@ -37,19 +37,23 @@
 
 ## 📦 패키지 구조
 
-* `com.example.slowclock`
-    * `data`: 데이터 관련 클래스
-        * `model`: 앱에서 사용하는 데이터 객체들 (Schedule, User 등)
-        * `repository`: Firestore DB 접근 및 데이터 CRUD 처리 클래스
-        * `api`: VertexAI API 연동 인터페이스 및 요청/응답 모델
-    * `domain`: 비즈니스 로직
-        * `usecase`: 앱의 주요 기능 구현 UseCase 클래스
-    * `ui`: UI 관련 클래스
-        * `theme`: 앱 테마, 색상, 타이포그래피 정의
-    * `util`: 유틸리티 클래스
-        * 구글 로그인, 캘린더 API 연동
-        * FCM 토큰 관리
-        * 테스트용 유틸리티
-    * `service`: 백그라운드 서비스
-        * FCM 알림 처리
-    * `config`: 앱 설정 상수 (AI 관련 등)
+com.example.slowclock
+├── auth : 인증 관리
+│ └── AuthManager : Google OAuth 로그인
+├── data : 데이터 관련 클래스
+│ ├── model : 앱에서 사용하는 데이터 객체들 (Schedule, User 등)
+│ ├── remote
+│ │ ├── repository : Firestore DB 접근 및 데이터 CRUD 처리 클래스
+│ │ └── api : VertexAI API 연동 인터페이스 및 요청/응답 모델
+│ └── FirestoreDB, DummyDataManager
+├── ui : UI 관련 클래스
+│ ├── theme : 앱 테마, 색상, 타이포그래피 정의
+│ ├── main : 메인 화면 (일정 목록, 현재 할 일)
+│ ├── addschedule : 일정 추가/편집 화면
+│ └── common : 공통 컴포넌트
+├── navigation : 화면 간 이동 라우팅
+├── notification : FCM 푸시 알림 처리
+├── util : 유틸리티 클래스
+│ ├── 구글 로그인, 캘린더 API 연동
+│ └── 테스트용 유틸리티
+└── constants : 앱 설정 상수 (AI 관련 등)
