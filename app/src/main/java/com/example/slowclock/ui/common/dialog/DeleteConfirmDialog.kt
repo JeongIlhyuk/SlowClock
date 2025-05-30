@@ -89,7 +89,8 @@ fun DeleteConfirmDialog(
                     ) {
                         Text(
                             "취소",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
 
