@@ -48,6 +48,7 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel(),
     shouldRefresh: Boolean = false,
     onAddSchedule: () -> Unit = {},
+    onEditSchedule: (String) -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onRefreshHandled: () -> Unit = {}
 ) {
@@ -68,15 +69,16 @@ fun MainScreen(
             schedule = schedule,
             onDismiss = { viewModel.hideScheduleDetail() },
             onEdit = {
-                // TODO: 편집 화면으로 이동
                 viewModel.hideScheduleDetail()
+                onEditSchedule(schedule.id) // 편집 화면으로 이동
             },
             onDelete = {
                 viewModel.hideScheduleDetail()
-                viewModel.showDeleteConfirmDialog(schedule.id) // 이렇게 수정
+                viewModel.showDeleteConfirmDialog(schedule.id)
             }
         )
     }
+
 
     // 삭제 확인 다이얼로그 (이것도 필요함)
     if (uiState.showDeleteConfirmDialog && uiState.scheduleToDelete != null) {

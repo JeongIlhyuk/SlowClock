@@ -28,7 +28,10 @@ data class AddScheduleUiState(
     val isSuccess: Boolean = false,
     val error: AppError? = null,
     val canSave: Boolean = false,
-    val canRetry: Boolean = false
+    val canRetry: Boolean = false,
+    // 편집 모드용 추가
+    val isEditMode: Boolean = false,
+    val editingScheduleId: String = ""
 )
 
 class AddScheduleViewModel : ViewModel() {
@@ -79,21 +82,66 @@ class AddScheduleViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(showEndTimePicker = show)
     }
 
+    // 편집용 일정 로드
+    fun loadScheduleForEdit(scheduleId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                error = null,
+                isEditMode = true,
+                editingScheduleId = scheduleId
+            )
+
+            when (val result = scheduleRepository.getScheduleById(scheduleId)) {
+                is ScheduleRepository.ScheduleResult.Success -> {
+                    val schedule = result.data
+                    val startCal = Calendar.getInstance().apply {
+                        time = schedule.startTime.toDate()
+                    }
+                    val endCal = schedule.endTime?.let { endTime ->
+                        Calendar.getInstance().apply {
+                            time = endTime.toDate()
+                        }
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        title = schedule.title,
+                        description = schedule.description,
+                        selectedTime = startCal,
+                        endTime = endCal,
+                        isRecurring = schedule.isRecurring,
+                        recurringType = schedule.recurringType ?: "daily",
+                        isLoading = false,
+                        canSave = schedule.title.isNotBlank()
+                    )
+                }
+
+                is ScheduleRepository.ScheduleResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error,
+                        canRetry = true
+                    )
+                }
+            }
+        }
+    }
+
     fun saveSchedule() {
         val currentTitle = _uiState.value.title.trim()
 
-        // 클라이언트 측 검증 (copy 함수 대신 직접 AppError.GeneralError 사용)
+        // 클라이언트 측 검증
         when {
             currentTitle.isBlank() -> {
                 _uiState.value = _uiState.value.copy(
-                    error = AppError.GeneralError("할 일을 입력해주세요") // 수정
+                    error = AppError.GeneralError("할 일을 입력해주세요")
                 )
                 return
             }
 
             currentTitle.length > 100 -> {
                 _uiState.value = _uiState.value.copy(
-                    error = AppError.GeneralError("제목이 너무 깁니다 (최대 100자)") // 수정
+                    error = AppError.GeneralError("제목이 너무 깁니다 (최대 100자)")
                 )
                 return
             }
@@ -102,7 +150,7 @@ class AddScheduleViewModel : ViewModel() {
                 end.timeInMillis <= _uiState.value.selectedTime.timeInMillis
             } == true -> {
                 _uiState.value = _uiState.value.copy(
-                    error = AppError.GeneralError("종료 시간은 시작 시간보다 늦어야 합니다") // 수정
+                    error = AppError.GeneralError("종료 시간은 시작 시간보다 늦어야 합니다")
                 )
                 return
             }
@@ -120,6 +168,7 @@ class AddScheduleViewModel : ViewModel() {
                 Log.d("AddSchedule", "현재 사용자: ${FirebaseAuth.getInstance().currentUser?.uid}")
 
                 val schedule = Schedule(
+                    id = if (_uiState.value.isEditMode) _uiState.value.editingScheduleId else "",
                     title = currentTitle,
                     description = _uiState.value.description.trim(),
                     startTime = Timestamp(_uiState.value.selectedTime.time),
@@ -128,9 +177,17 @@ class AddScheduleViewModel : ViewModel() {
                     recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
                 )
 
-                when (val result = scheduleRepository.addSchedule(schedule)) {
+                val result = if (_uiState.value.isEditMode) {
+                    Log.d("AddSchedule", "일정 수정 모드")
+                    scheduleRepository.updateSchedule(schedule)
+                } else {
+                    Log.d("AddSchedule", "일정 추가 모드")
+                    scheduleRepository.addSchedule(schedule)
+                }
+
+                when (result) {
                     is ScheduleRepository.ScheduleResult.Success -> {
-                        Log.d("AddSchedule", "저장 성공: ${result.data}")
+                        Log.d("AddSchedule", "저장 성공")
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             isSuccess = true
@@ -150,7 +207,7 @@ class AddScheduleViewModel : ViewModel() {
                 Log.e("AddSchedule", "예상치 못한 저장 실패", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = AppError.GeneralError("일정 저장 중 문제가 발생했습니다"), // 수정
+                    error = AppError.GeneralError("일정 저장 중 문제가 발생했습니다"),
                     canRetry = true
                 )
             }
@@ -166,5 +223,3 @@ class AddScheduleViewModel : ViewModel() {
         saveSchedule()
     }
 }
-
-// copy 확장 함수 완전히 제거 (더 이상 필요 없음)

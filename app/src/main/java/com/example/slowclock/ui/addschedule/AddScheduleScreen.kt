@@ -52,10 +52,19 @@ import com.example.slowclock.ui.addschedule.components.TimePickerSection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddScheduleScreen(
+    scheduleId: String? = null,
     onNavigateBack: (Boolean) -> Unit,
     viewModel: AddScheduleViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isEditMode = !scheduleId.isNullOrBlank()
+
+    // 편집 모드일 때 기존 데이터 로드
+    LaunchedEffect(scheduleId) {
+        if (!scheduleId.isNullOrBlank()) {
+            viewModel.loadScheduleForEdit(scheduleId)
+        }
+    }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
@@ -68,7 +77,7 @@ fun AddScheduleScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "일정 추가",
+                        text = if (isEditMode) "일정 수정" else "일정 추가",
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )

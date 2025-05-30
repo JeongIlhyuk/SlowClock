@@ -8,6 +8,8 @@ import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.main.MainScreen
 import com.example.slowclock.ui.profile.ProfileScreen
 
+// app/src/main/java/com/example/slowclock/navigation/AppNavigation.kt
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -26,6 +28,9 @@ fun AppNavigation() {
                 onAddSchedule = {
                     navController.navigate("add_schedule")
                 },
+                onEditSchedule = { scheduleId -> // 새로 추가
+                    navController.navigate("edit_schedule/$scheduleId")
+                },
                 onNavigateToProfile = {
                     navController.navigate("profile")
                 },
@@ -39,6 +44,22 @@ fun AppNavigation() {
 
         composable("add_schedule") {
             AddScheduleScreen(
+                onNavigateBack = { success ->
+                    if (success) {
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("schedule_added", true)
+                    }
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 편집 화면 추가
+        composable("edit_schedule/{scheduleId}") { backStackEntry ->
+            val scheduleId = backStackEntry.arguments?.getString("scheduleId") ?: ""
+            AddScheduleScreen(
+                scheduleId = scheduleId, // 편집 모드
                 onNavigateBack = { success ->
                     if (success) {
                         navController.previousBackStackEntry
