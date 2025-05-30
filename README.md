@@ -26,9 +26,7 @@
 ### 3. 디버그 SHA-1 키 등록
 
 - **용도**: Google 로그인 기능을 위한 앱 인증
-- **등록 위치**: Firebase Console
-- **등록 방법
-  **: https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
+- https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에서 본인의 디버그용 SHA-1 키 추가
 
 ```
