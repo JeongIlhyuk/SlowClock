@@ -22,9 +22,14 @@
     2. "새 비공개 키 생성" 클릭
     3. Node.js 선택 → 키 생성
     4. 다운로드된 파일을 `service_account.json`로 이름 변경
-- 본인 디버그용 SHA-1
-  키를 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
-  에 등록
+
+### 3. 디버그 SHA-1 키 등록
+
+- **용도**: Google 로그인 기능을 위한 앱 인증
+- **등록 위치**: Firebase Console
+- **등록 방법
+  **: https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
+  에서 본인의 디버그용 SHA-1 키 추가
 
 ```
   ./gradlew signingReport  # 맥/리눅스
