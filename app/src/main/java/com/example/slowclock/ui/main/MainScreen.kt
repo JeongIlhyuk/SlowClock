@@ -1,4 +1,4 @@
-// ui/main/MainScreen.kt
+// app/src/main/java/com/example/slowclock/ui/main/MainScreen.kt
 package com.example.slowclock.ui.main
 
 import androidx.compose.foundation.background
@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -28,10 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.main.components.CurrentTaskSection
 import com.example.slowclock.ui.main.components.EmptyStateCard
@@ -80,70 +78,67 @@ fun MainScreen(
                     ) {
                         Text(
                             text = "느린시계",
-                            fontSize = 28.sp, // 더 크게
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF2196F3)
+                            style = MaterialTheme.typography.headlineLarge, // fontSize 대신 style 사용
+                            color = MaterialTheme.colorScheme.primary // 하드코딩 색상 제거
                         )
                         Text(
                             text = dateFormat.format(Date()),
-                            fontSize = 16.sp, // 더 크게
-                            color = Color(0xFF424242),
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge, // fontSize 대신 style 사용
+                            color = MaterialTheme.colorScheme.onSurfaceVariant // 하드코딩 색상 제거
                         )
                     }
                 },
                 actions = {
-
-                    // 프로필 버튼 (더 크게)
-                    IconButton(
-                        onClick = onNavigateToProfile,
-                        modifier = Modifier.size(48.dp) // 더 크게
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "내 정보",
-                            tint = Color(0xFF2196F3),
-                            modifier = Modifier.size(28.dp) // 아이콘도 크게
-                        )
-                    }
                     // 새로고침 버튼 (더 크게)
                     IconButton(
                         onClick = { viewModel.loadTodaySchedules() },
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(56.dp) // 48dp → 56dp
                     ) {
-
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = Color(0xFF2196F3),
-                                strokeWidth = 3.dp
+                                modifier = Modifier.size(28.dp), // 24dp → 28dp
+                                color = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
+                                strokeWidth = 4.dp // 3dp → 4dp
                             )
                         } else {
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription = "새로고침",
-                                tint = Color(0xFF2196F3),
-                                modifier = Modifier.size(28.dp)
+                                tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
+                                modifier = Modifier.size(32.dp) // 28dp → 32dp
                             )
                         }
                     }
+
+                    // 프로필 버튼 (더 크게)
+                    IconButton(
+                        onClick = onNavigateToProfile,
+                        modifier = Modifier.size(56.dp) // 48dp → 56dp
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "내 정보",
+                            tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
+                            modifier = Modifier.size(32.dp) // 28dp → 32dp
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface // 하드코딩 색상 제거
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddSchedule,
-                containerColor = Color(0xFF2196F3),
-                modifier = Modifier.size(64.dp) // 더 크게
+                containerColor = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
+                modifier = Modifier.size(72.dp) // 64dp → 72dp
             ) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "일정 추가",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp) // 아이콘도 크게
+                    tint = MaterialTheme.colorScheme.onPrimary, // 하드코딩 색상 제거
+                    modifier = Modifier.size(36.dp) // 32dp → 36dp
                 )
             }
         }
@@ -152,12 +147,12 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.background), // 하드코딩 색상 제거
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
 
-            // 📊 오늘 일정 요약 (새로 추가)
+            // 📊 오늘 일정 요약
             item {
                 TodaySummaryCard(
                     totalCount = uiState.totalCount,
@@ -184,14 +179,14 @@ fun MainScreen(
                 )
             }
 
-            // 빈 상태 처리 (더 친근하게)
+            // 빈 상태 처리
             if (uiState.todaySchedules.isEmpty() && !uiState.isLoading) {
                 item {
                     EmptyStateCard()
                 }
             }
 
-            // 에러 메시지 (더 명확하게)
+            // 에러 메시지
             if (uiState.error != null) {
                 item {
                     ErrorCard(error = uiState.error!!)
