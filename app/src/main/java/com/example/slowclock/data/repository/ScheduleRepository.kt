@@ -168,6 +168,11 @@ class ScheduleRepository {
     }
 
     suspend fun updateSchedule(schedule: Schedule): ScheduleResult<Unit> {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            return ScheduleResult.Error(AppError.AuthError)
+        }
+
         if (schedule.id.isBlank()) {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
@@ -177,6 +182,7 @@ class ScheduleRepository {
         }
 
         val updatedSchedule = schedule.copy(
+            userId = uid, // 현재 사용자 ID로 강제 설정
             updatedAt = Timestamp.now()
         )
 
