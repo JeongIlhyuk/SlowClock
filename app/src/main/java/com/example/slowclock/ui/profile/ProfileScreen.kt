@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/profile/ProfileScreen.kt
 package com.example.slowclock.ui.profile
 
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack // 이렇게 수정
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -16,16 +17,14 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,21 +40,22 @@ fun ProfileScreen(
                 title = {
                     Text(
                         text = "내 정보",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack, // 이렇게 수정
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
-                            tint = Color(0xFF2196F3)
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         }
@@ -64,7 +64,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp),
+                .padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -72,29 +72,29 @@ fun ProfileScreen(
             Icon(
                 Icons.Default.Person,
                 contentDescription = "프로필",
-                modifier = Modifier.size(100.dp),
-                tint = Color(0xFF2196F3)
+                modifier = Modifier.size(120.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // 사용자 이름
             Text(
                 text = currentUser?.displayName ?: "사용자",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // 이메일
             Text(
                 text = currentUser?.email ?: "",
-                fontSize = 16.sp,
-                color = Color.Gray
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(56.dp))
 
             // 로그아웃 버튼
             Button(
@@ -103,13 +103,14 @@ fun ProfileScreen(
                     onNavigateBack()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE57373)
-                )
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier.size(width = 200.dp, height = 56.dp)
             ) {
                 Text(
                     text = "로그아웃",
-                    color = Color.White,
-                    fontSize = 16.sp
+                    color = MaterialTheme.colorScheme.onError,
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }

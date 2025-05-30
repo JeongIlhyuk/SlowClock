@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/addschedule/components/TimePickerSection.kt
 package com.example.slowclock.ui.addschedule.components
 
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -15,15 +17,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -43,56 +43,59 @@ fun TimePickerSection(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(24.dp)) {
             Text(
                 text = "시간 설정",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 16.dp)
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 20.dp)
             )
 
             // 시작 시간
             Text(
                 text = "시작 시간",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 8.dp)
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 12.dp)
             )
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onShowTimePicker(true) }
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.AccessTime,
                         contentDescription = null,
-                        tint = Color(0xFF2196F3)
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = timeFormat.format(selectedTime.time),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = "변경",
-                        fontSize = 14.sp,
-                        color = Color(0xFF2196F3)
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 종료 시간 (선택사항)
             Row(
@@ -101,8 +104,8 @@ fun TimePickerSection(
             ) {
                 Text(
                     text = "종료 시간 (선택사항)",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (endTime != null) {
@@ -110,7 +113,8 @@ fun TimePickerSection(
                         Icon(
                             Icons.Default.Close,
                             contentDescription = "종료 시간 제거",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
@@ -118,31 +122,34 @@ fun TimePickerSection(
 
             if (endTime != null) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E5F5)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onShowEndTimePicker(true) }
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Default.AccessTime,
                             contentDescription = null,
-                            tint = Color(0xFF9C27B0)
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(28.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = timeFormat.format(endTime.time),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "변경",
-                            fontSize = 14.sp,
-                            color = Color(0xFF9C27B0)
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
                 }
@@ -157,11 +164,14 @@ fun TimePickerSection(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("종료 시간 설정하기")
+                    Text(
+                        "종료 시간 설정하기",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 빠른 시간 선택
             QuickTimeSelector(onTimeSelected = onTimeSelected)

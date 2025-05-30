@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/ui/addschedule/components/QuickTimeSelector.kt
 package com.example.slowclock.ui.addschedule.components
 
 import androidx.compose.foundation.layout.Arrangement
@@ -7,15 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import java.util.Calendar
 
 @Composable
@@ -27,15 +26,14 @@ fun QuickTimeSelector(
     Column {
         Text(
             text = "빠른 선택",
-            fontSize = 14.sp,
-            color = Color(0xFF424242),
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             quickTimes.take(3).forEach { (label, calendar) ->
                 OutlinedButton(
@@ -44,19 +42,18 @@ fun QuickTimeSelector(
                 ) {
                     Text(
                         label,
-                        fontSize = 14.sp,
-                        color = Color(0xFF2196F3),
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             quickTimes.drop(3).forEach { (label, calendar) ->
                 OutlinedButton(
@@ -65,9 +62,8 @@ fun QuickTimeSelector(
                 ) {
                     Text(
                         label,
-                        fontSize = 14.sp,
-                        color = Color(0xFF2196F3),
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
