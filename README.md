@@ -8,7 +8,8 @@
 - google-services.json
   파일은 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에서 받아 `app`에 넣기
-- service_account.json 파일은 `app/src/main/res/raw/`에 넣기
+- https://console.firebase.google.com/project/slow-clock-scheduler/settings/serviceaccounts/adminsdkservice_account.json
+  에서 Node.js로 파일을 받아 이름을 service_account.json로 변경한 뒤 `app/src/main/res/raw/`에 넣기
 - 본인 디버그용 SHA-1
   키를 https://console.firebase.google.com/project/slow-clock-scheduler/settings/general/android:com.example.slowclock
   에 등록
