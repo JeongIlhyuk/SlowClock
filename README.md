@@ -1,6 +1,7 @@
 ## 💩 주의사항
 
 - 메인 브랜치에 직접 푸시 금지. PR로 코드 리뷰 받고 머지
+- 각자 개발할 기능은 feature branch로 분리해서 작업 (feature/기능명)
 - Vertex AI는 쿼리당 비용 발생! 테스트할 때 신중하게 요청
 
 ## 🚨 개발 환경 설정
@@ -33,13 +34,6 @@
   ./gradlew signingReport  # 맥/리눅스
   gradlew signingReport    # 윈도우
 ```
-
-## 📋 개발 규칙
-
-- 각자 개발할 기능은 feature branch로 분리해서 작업 (feature/기능명)
-- 커밋 메시지 규칙: "[기능] 내용" 형식으로 작성
-- API/외부 서비스 관련 로그 태그는 `{기능영역}_SLOWCLOCK` 형식으로 작성
-    - 예: `Auth_SLOWCLOCK`, `Calender_SLOWCLOCK`, `FCM_SLOWCLOCK`, `DB_SLOWCLOCK`
 
 ## 📦 패키지 구조
 
