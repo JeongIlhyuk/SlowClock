@@ -45,26 +45,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 매니저 초기화
-        calendarManager = GoogleCalendarManager(this)
-        authManager = GoogleAuthManager(this)
+                // 매니저 초기화
+                calendarManager = GoogleCalendarManager(this)
+                authManager = GoogleAuthManager(this)
 
-        vertexAIManager = VertexAIRepository(this)
+                vertexAIManager = VertexAIRepository(this)
 
-        // 테스트 코드 실행
-        FirestoreTestUtil.testFirestore()
-        FCMManager.getToken()
-        authManager.signIn()
+                // 테스트 코드 실행
+                FirestoreTestUtil.testFirestore()
+                FCMManager.getToken()
+                authManager.signIn()
 
-        val useCase = GenerateScheduleRecommendationUseCase(this)
-        lifecycleScope.launch {
-            try {
-                val recommendations = useCase("고령자", "월요일", "오전")
-                Log.d("VertexAI_SLOWCLOCK", "추천 결과: $recommendations")
-            } catch (e: Exception) {
-                Log.e("VertexAI_SLOWCLOCK", "테스트 실패", e)
-            }
-        }
+                val useCase = GenerateScheduleRecommendationUseCase(this)
+                lifecycleScope.launch {
+                    try {
+                        val recommendations = useCase("고령자", "월요일", "오전")
+                        Log.d("VertexAI_SLOWCLOCK", "추천 결과: $recommendations")
+                    } catch (e: Exception) {
+                        Log.e("VertexAI_SLOWCLOCK", "테스트 실패", e)
+                    }
+                }
 
         enableEdgeToEdge()
         setContent {
