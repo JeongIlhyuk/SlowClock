@@ -11,9 +11,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.auth.AuthManager
 import com.example.slowclock.data.DummyDataManager
 import com.example.slowclock.navigation.AppNavigation
+import com.example.slowclock.ui.familygroup.FamilyGroupViewModel
 import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
 

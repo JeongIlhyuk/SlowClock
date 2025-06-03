@@ -26,8 +26,7 @@ object GuardianNotifier {
         ) {
             override fun getHeaders(): MutableMap<String, String> {
                 return mutableMapOf(
-                    "Authorization" to "key=bc941e205006845caa3d8c03dc12609e49610dee\n" +
-                            "0e5a22a39796a8f2ee0e1d6d1ae2e7c425662f65", // 🔐 Firebase 프로젝트의 서버 키로 바꾸세요
+                    "Authorization" to "key=//", // 🔐 Firebase 프로젝트의 서버 키로 바꾸세요
                     "Content-Type" to "application/json"
                 )
             }
