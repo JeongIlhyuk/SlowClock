@@ -27,7 +27,7 @@ class VertexAIRepository(private val context: Context) {
             // Load service account credentials from raw resource
             val credentials = withContext(Dispatchers.IO) {
                 val creds = ServiceAccountCredentials.fromStream(
-                     context.resources.openRawResource(R.raw.service_account)
+                    context.resources.openRawResource(R.raw.service_account)
                 ).createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
                 creds.refresh()
                 creds
