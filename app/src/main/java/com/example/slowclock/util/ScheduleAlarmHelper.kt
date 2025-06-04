@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.example.slowclock.reciever.AlarmReceiver
 import com.example.slowclock.data.model.Schedule
 
@@ -28,5 +29,6 @@ object ScheduleAlarmHelper {
             schedule.startTime?.toDate()?.time ?: System.currentTimeMillis(),
             pendingIntent
         )
+        Log.d("AlarmHelper", "알람 예약 완료")
     }
 }

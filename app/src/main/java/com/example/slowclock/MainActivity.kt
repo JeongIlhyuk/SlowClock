@@ -4,17 +4,22 @@ package com.example.slowclock
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.auth.AuthManager
 import com.example.slowclock.data.DummyDataManager
 import com.example.slowclock.navigation.AppNavigation
+import com.example.slowclock.notification.ForegroundService
+import com.example.slowclock.notification.requestExactAlarmPermissionIfNeeded
+import com.example.slowclock.ui.familygroup.FamilyGroupManageScreen
 import com.example.slowclock.ui.familygroup.FamilyGroupViewModel
 import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
@@ -50,7 +55,6 @@ class MainActivity : ComponentActivity() {
                 addDummyData()
             }
 
-
             enableEdgeToEdge()
             setContent {
                 SlowClockTheme {
@@ -61,6 +65,12 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Log.e("MAIN", "onCreate 실패", e)
         }
+        requestExactAlarmPermissionIfNeeded(this) // 알림 권한 요청
+        createNotificationChannel() // ← 반드시 호출 필요
+
+        // NotificationChannel 생성  ForegroundService에서 알림 사용을 위해
+        val serviceIntent = Intent(this, ForegroundService::class.java)
+        ContextCompat.startForegroundService(this, serviceIntent)
     }
 
     private fun addDummyData() {

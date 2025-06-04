@@ -1,11 +1,12 @@
-// app/src/main/java/com/example/slowclock/ui/addschedule/AddScheduleViewModel.kt
 package com.example.slowclock.ui.addschedule
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
 import com.example.slowclock.data.remote.repository.ScheduleRepository
+import com.example.slowclock.notification.requestExactAlarmPermissionIfNeeded
 import com.example.slowclock.util.AppError
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import com.example.slowclock.util.ScheduleAlarmHelper
 
 data class AddScheduleUiState(
     val title: String = "",
@@ -29,7 +31,6 @@ data class AddScheduleUiState(
     val error: AppError? = null,
     val canSave: Boolean = false,
     val canRetry: Boolean = false,
-    // 편집 모드용 추가
     val isEditMode: Boolean = false,
     val editingScheduleId: String = ""
 )
@@ -82,7 +83,6 @@ class AddScheduleViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(showEndTimePicker = show)
     }
 
-    // 편집용 일정 로드
     fun loadScheduleForEdit(scheduleId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
@@ -127,10 +127,10 @@ class AddScheduleViewModel : ViewModel() {
         }
     }
 
-    fun saveSchedule() {
+    fun saveSchedule(context: Context) {
         val currentTitle = _uiState.value.title.trim()
 
-        // 클라이언트 측 검증
+        // Validation (outside coroutine)
         when {
             currentTitle.isBlank() -> {
                 _uiState.value = _uiState.value.copy(
@@ -138,14 +138,12 @@ class AddScheduleViewModel : ViewModel() {
                 )
                 return
             }
-
             currentTitle.length > 100 -> {
                 _uiState.value = _uiState.value.copy(
                     error = AppError.GeneralError("제목이 너무 깁니다 (최대 100자)")
                 )
                 return
             }
-
             _uiState.value.endTime?.let { end ->
                 end.timeInMillis <= _uiState.value.selectedTime.timeInMillis
             } == true -> {
@@ -188,12 +186,18 @@ class AddScheduleViewModel : ViewModel() {
                 when (result) {
                     is ScheduleRepository.ScheduleResult.Success -> {
                         Log.d("AddSchedule", "저장 성공")
+                        requestExactAlarmPermissionIfNeeded(context)
+                        try {
+                            ScheduleAlarmHelper.scheduleAlarm(context, schedule)
+                            Log.d("AddSchedule", "알람 예약 성공")
+                        } catch (e: Exception) {
+                            Log.e("AddSchedule", "알람 예약 실패", e)
+                        }
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             isSuccess = true
                         )
                     }
-
                     is ScheduleRepository.ScheduleResult.Error -> {
                         Log.e("AddSchedule", "저장 실패: ${result.error.message}")
                         _uiState.value = _uiState.value.copy(
@@ -218,8 +222,8 @@ class AddScheduleViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(error = null, canRetry = false)
     }
 
-    fun retryLastAction() {
+    fun retryLastAction(context: Context) {
         clearError()
-        saveSchedule()
+        saveSchedule(context)
     }
 }
