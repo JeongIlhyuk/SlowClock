@@ -14,6 +14,7 @@ data class Schedule(
     val endTime: Timestamp? = null,
     val isCompleted: Boolean = false,
     val isRecurring: Boolean = false,
+    val isSkipped: Boolean = false,
     val recurringType: String? = null, // "daily", "weekly", "monthly"
     val createdAt: Timestamp = Timestamp.now(),
     val updatedAt: Timestamp = Timestamp.now()
