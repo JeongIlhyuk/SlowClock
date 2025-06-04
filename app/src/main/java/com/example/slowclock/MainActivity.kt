@@ -1,15 +1,21 @@
 // MainActivity.kt
 package com.example.slowclock
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.auth.AuthManager
 import com.example.slowclock.data.DummyDataManager
 import com.example.slowclock.navigation.AppNavigation
+import com.example.slowclock.ui.familygroup.FamilyGroupViewModel
 import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
 
@@ -31,14 +37,11 @@ class MainActivity : ComponentActivity() {
                 },
                 onError = { error ->
                     Log.e("AUTH", "로그인 실패: $error")
-                    // 에러 처리하지만 앱은 계속 실행
                 }
             )
 
-            // 현재 로그인 상태 확인
-            val currentUser = authManager.getCurrentUser()
-            Log.d("AUTH", "현재 사용자: ${currentUser?.uid}")
-
+// 로그인 상태 확인
+            val currentUser = this.authManager.getCurrentUser()
             if (currentUser == null) {
                 Log.d("AUTH", "로그인 필요 - 구글 로그인 시작")
                 authManager.signInWithGoogle()
@@ -46,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 Log.d("AUTH", "이미 로그인됨: ${currentUser.displayName}")
                 addDummyData()
             }
+
 
             enableEdgeToEdge()
             setContent {
@@ -67,6 +71,20 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 Log.e("MAIN", "더미 데이터 처리 실패", e)
             }
+        }
+    }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "일정 알림"
+            val descriptionText = "일정 시간에 울리는 알림"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("schedule_channel", name, importance).apply {
+                description = descriptionText
+            }
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }

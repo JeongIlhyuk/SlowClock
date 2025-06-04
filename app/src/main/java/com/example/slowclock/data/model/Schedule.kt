@@ -7,6 +7,7 @@ import com.google.firebase.firestore.DocumentId
 data class Schedule(
     @DocumentId val id: String = "",
     val userId: String = "",
+    val familyGroupId: String = "", //  가족 일정 공유를 위한 필드 추가
     val title: String = "",
     val description: String = "",
     val startTime: Timestamp = Timestamp.now(),

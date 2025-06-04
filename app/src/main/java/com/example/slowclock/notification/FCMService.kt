@@ -21,6 +21,15 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        // Firestore에 FCM 토큰 저장
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        user?.let {
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("users").document(it.uid)
+                .update("fcmToken", token)
+                .addOnSuccessListener { android.util.Log.d("FCM", "토큰 Firestore 저장 성공") }
+                .addOnFailureListener { e -> android.util.Log.e("FCM", "토큰 Firestore 저장 실패", e) }
+        }
     }
 
     private fun sendNotification(title: String, messageBody: String) {
