@@ -5,15 +5,23 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.data.model.User
+import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.remote.repository.ScheduleRepository
 import com.example.slowclock.util.AppError
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 data class MainUiState(
     val todaySchedules: List<Schedule> = emptyList(),
+    val sharedReminders: List<Schedule> = emptyList(), // 공유 일정
     val currentSchedule: Schedule? = null,
     val completedCount: Int = 0,
     val totalCount: Int = 0,
@@ -22,11 +30,13 @@ data class MainUiState(
     val selectedScheduleForDetail: Schedule? = null,
     val canRetry: Boolean = false, // 재시도 가능 여부 추가
     val showDeleteConfirmDialog: Boolean = false,
-    val scheduleToDelete: Schedule? = null
+    val scheduleToDelete: Schedule? = null,
+    val sharedReminderOwners: Map<String, String> = emptyMap() // userId -> name
 )
 
 class MainViewModel : ViewModel() {
     private val scheduleRepository = ScheduleRepository()
+    private var sharedRemindersJob: Job? = null
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -220,6 +230,72 @@ class MainViewModel : ViewModel() {
                         error = result.error,
                         canRetry = true
                     )
+                }
+            }
+        }
+    }
+
+    fun observeSharedReminders(shareCode: String?) {
+        if (shareCode.isNullOrBlank()) return
+        sharedRemindersJob?.cancel()
+        sharedRemindersJob = viewModelScope.launch {
+            scheduleRepository.observeSchedulesBySharedCode(shareCode).collectLatest { reminders ->
+                _uiState.value = _uiState.value.copy(sharedReminders = reminders)
+                // Optionally update owner names if needed
+                val userIds = reminders.map { it.userId }.filter { it.isNotBlank() }.distinct()
+                val ownerMap = fetchUserNames(userIds)
+                _uiState.value = _uiState.value.copy(sharedReminderOwners = ownerMap)
+            }
+        }
+    }
+
+    private suspend fun fetchUserNames(userIds: List<String>): Map<String, String> = withContext(Dispatchers.IO) {
+        if (userIds.isEmpty()) return@withContext emptyMap()
+        try {
+            val usersCollection = FirestoreDB.users
+            val chunks = userIds.chunked(10) // Firestore whereIn max 10
+            val result = mutableMapOf<String, String>()
+            for (chunk in chunks) {
+                val docs = usersCollection.whereIn("id", chunk).get().await()
+                for (doc in docs.documents) {
+                    val user = doc.toObject(User::class.java)
+                    if (user != null) {
+                        result[user.id] = user.name
+                    }
+                }
+            }
+            result
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
+    fun toggleSharedReminderComplete(scheduleId: String) {
+        viewModelScope.launch {
+            val schedule = _uiState.value.sharedReminders.find { it.id == scheduleId }
+            schedule?.let {
+                // Optimistic update
+                val updatedReminders = _uiState.value.sharedReminders.map { s ->
+                    if (s.id == scheduleId) s.copy(isCompleted = !s.isCompleted) else s
+                }
+                _uiState.value = _uiState.value.copy(sharedReminders = updatedReminders)
+
+                // Update in Firestore
+                when (val result = scheduleRepository.markScheduleAsCompleted(scheduleId, !it.isCompleted)) {
+                    is ScheduleRepository.ScheduleResult.Success -> {
+                        // Success, do nothing (snapshot will update)
+                    }
+                    is ScheduleRepository.ScheduleResult.Error -> {
+                        // On error, reload shared reminders to revert
+                        val shareCode = it.sharedCode
+                        if (shareCode.isNotBlank()) {
+                            observeSharedReminders(shareCode)
+                        }
+                        _uiState.value = _uiState.value.copy(
+                            error = result.error,
+                            canRetry = false
+                        )
+                    }
                 }
             }
         }

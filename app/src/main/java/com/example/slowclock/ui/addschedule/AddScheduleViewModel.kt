@@ -32,7 +32,8 @@ data class AddScheduleUiState(
     val canSave: Boolean = false,
     val canRetry: Boolean = false,
     val isEditMode: Boolean = false,
-    val editingScheduleId: String = ""
+    val editingScheduleId: String = "",
+    val editingSchedule: Schedule? = null // <-- add this
 )
 
 class AddScheduleViewModel : ViewModel() {
@@ -112,7 +113,8 @@ class AddScheduleViewModel : ViewModel() {
                         isRecurring = schedule.isRecurring,
                         recurringType = schedule.recurringType ?: "daily",
                         isLoading = false,
-                        canSave = schedule.title.isNotBlank()
+                        canSave = schedule.title.isNotBlank(),
+                        editingSchedule = schedule // <-- store full schedule
                     )
                 }
 
@@ -165,15 +167,27 @@ class AddScheduleViewModel : ViewModel() {
                 Log.d("AddSchedule", "일정 저장 시작: $currentTitle")
                 Log.d("AddSchedule", "현재 사용자: ${FirebaseAuth.getInstance().currentUser?.uid}")
 
-                val schedule = Schedule(
-                    id = if (_uiState.value.isEditMode) _uiState.value.editingScheduleId else "",
-                    title = currentTitle,
-                    description = _uiState.value.description.trim(),
-                    startTime = Timestamp(_uiState.value.selectedTime.time),
-                    endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
-                    isRecurring = _uiState.value.isRecurring,
-                    recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
-                )
+                val schedule = if (_uiState.value.isEditMode) {
+                    // Use original schedule as base, update only changed fields
+                    val original = _uiState.value.editingSchedule!!
+                    original.copy(
+                        title = currentTitle,
+                        description = _uiState.value.description.trim(),
+                        startTime = Timestamp(_uiState.value.selectedTime.time),
+                        endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
+                        isRecurring = _uiState.value.isRecurring,
+                        recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
+                    )
+                } else {
+                    Schedule(
+                        title = currentTitle,
+                        description = _uiState.value.description.trim(),
+                        startTime = Timestamp(_uiState.value.selectedTime.time),
+                        endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
+                        isRecurring = _uiState.value.isRecurring,
+                        recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
+                    )
+                }
 
                 val result = if (_uiState.value.isEditMode) {
                     Log.d("AddSchedule", "일정 수정 모드")

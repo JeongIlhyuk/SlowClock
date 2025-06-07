@@ -10,6 +10,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import com.example.slowclock.data.FirestoreDB
+import com.example.slowclock.data.model.User
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.google.firebase.Timestamp
 
 class AuthManager(private val activity: ComponentActivity) {
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -24,12 +31,47 @@ class AuthManager(private val activity: ComponentActivity) {
             if (result.resultCode == Activity.RESULT_OK) {
                 val user = firebaseAuth.currentUser
                 Log.d("AUTH", "로그인 성공: ${user?.displayName} (${user?.email})")
+                // Ensure shareCode exists for this user
+                user?.let { ensureShareCodeForUser(it.uid, it.displayName ?: "", it.email ?: "") }
                 onSuccess()
             } else {
                 val error = response?.error?.message ?: "로그인이 취소되었습니다"
                 Log.e("AUTH", "로그인 실패: $error")
                 onError(error)
             }
+        }
+    }
+
+    private fun ensureShareCodeForUser(uid: String, name: String, email: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val userDoc = FirestoreDB.users.document(uid).get().await()
+                val userModel = userDoc.toObject(User::class.java)
+                if (userModel == null || userModel.shareCode.isNullOrBlank()) {
+                    // Generate unique 6-character code
+                    val code = generateUniqueShareCode()
+                    val newUser = User(
+                        id = uid,
+                        name = name,
+                        email = email,
+                        shareCode = code,
+                        createdAt = userModel?.createdAt ?: Timestamp.now(),
+                        updatedAt = Timestamp.now()
+                    )
+                    FirestoreDB.users.document(uid).set(newUser).await()
+                }
+            } catch (e: Exception) {
+                Log.e("AUTH", "공유 코드 생성/저장 실패", e)
+            }
+        }
+    }
+
+    private suspend fun generateUniqueShareCode(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        while (true) {
+            val code = (1..6).map { chars.random() }.joinToString("")
+            val exists = FirestoreDB.users.whereEqualTo("shareCode", code).get().await().documents.isNotEmpty()
+            if (!exists) return code
         }
     }
 

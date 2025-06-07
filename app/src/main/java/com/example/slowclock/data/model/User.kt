@@ -9,6 +9,7 @@ data class User(
     val name: String = "",
     val email: String = "",
     val profileImage: String = "",
+    val shareCode: String = "", // 6-character sharing code
     val createdAt: Timestamp = Timestamp.now(),
     val updatedAt: Timestamp = Timestamp.now()
 )

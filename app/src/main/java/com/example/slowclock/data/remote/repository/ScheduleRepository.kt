@@ -9,6 +9,9 @@ import com.example.slowclock.util.toAppError
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 
@@ -100,8 +103,17 @@ class ScheduleRepository {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
 
+        // Fetch user's shareCode
+        val userDoc = FirestoreDB.users.document(uid).get().await()
+        val userShareCode = userDoc.getString("shareCode") ?: ""
+        Log.d("ScheduleRepo", "Fetched userShareCode: '$userShareCode'")
+        if (userShareCode.isBlank()) {
+            Log.w("ScheduleRepo", "User's shareCode is blank! Schedule will be saved without a sharedCode.")
+        }
+
         val newSchedule = schedule.copy(
             userId = uid,
+            sharedCode = userShareCode,
             createdAt = Timestamp.now(),
             updatedAt = Timestamp.now()
         )
@@ -181,9 +193,11 @@ class ScheduleRepository {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
 
+        // Always preserve sharedCode and all fields from the original schedule
         val updatedSchedule = schedule.copy(
             userId = uid, // 현재 사용자 ID로 강제 설정
-            updatedAt = Timestamp.now()
+            updatedAt = Timestamp.now(),
+            sharedCode = schedule.sharedCode // ensure sharedCode is preserved
         )
 
         return try {
@@ -270,5 +284,58 @@ class ScheduleRepository {
             Log.e("ScheduleRepo", "일정 조회 중 예상치 못한 에러", e)
             ScheduleResult.Error(e.toAppError())
         }
+    }
+
+    // 공유 코드로 일정(리마인더) 목록 가져오기
+    suspend fun getSchedulesBySharedCode(sharedCode: String): ScheduleResult<List<Schedule>> {
+        Log.d("ScheduleRepo", "공유코드로 일정 조회 시작: $sharedCode")
+        return try {
+            val documents = schedulesCollection
+                .whereEqualTo("sharedCode", sharedCode)
+                .get()
+                .await()
+            Log.d("ScheduleRepo", "공유코드로 조회된 문서 수: ${documents.size()}")
+            val schedules = documents.mapNotNull { document ->
+                try {
+                    document.toObject(Schedule::class.java)
+                } catch (e: Exception) {
+                    Log.w("ScheduleRepo", "공유코드 일정 파싱 실패: ", e)
+                    null
+                }
+            }
+            if (schedules.isEmpty()) {
+                Log.i("ScheduleRepo", "공유코드로 불러온 일정이 없습니다.")
+            } else {
+                Log.i("ScheduleRepo", "공유코드로 불러온 일정: ${schedules.size}")
+            }
+            ScheduleResult.Success(schedules)
+        } catch (e: FirebaseFirestoreException) {
+            Log.e("ScheduleRepo", "공유코드 일정 조회 실패: ${e.code}", e)
+            ScheduleResult.Error(AppError.GeneralError("공유코드 일정 조회 실패: ${e.localizedMessage}"))
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "공유코드 일정 조회 중 에러", e)
+            ScheduleResult.Error(AppError.GeneralError("공유코드 일정 조회 중 에러: ${e.localizedMessage}"))
+        }
+    }
+
+    // 공유 코드로 일정(리마인더) 목록 실시간 가져오기
+    fun observeSchedulesBySharedCode(sharedCode: String): Flow<List<Schedule>> = callbackFlow {
+        val listener = schedulesCollection
+            .whereEqualTo("sharedCode", sharedCode)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val schedules = snapshot?.documents?.mapNotNull { doc ->
+                    try {
+                        doc.toObject(Schedule::class.java)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } ?: emptyList()
+                trySend(schedules)
+            }
+        awaitClose { listener.remove() }
     }
 }

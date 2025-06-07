@@ -5,12 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,6 +26,8 @@ import com.example.slowclock.ui.familygroup.FamilyGroupManageScreen
 import com.example.slowclock.ui.familygroup.FamilyGroupViewModel
 import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
@@ -65,6 +70,7 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Log.e("MAIN", "onCreate 실패", e)
         }
+        requestNotificationPermission() // 알림 권한 요청
         requestExactAlarmPermissionIfNeeded(this) // 알림 권한 요청
         createNotificationChannel() // ← 반드시 호출 필요
 
@@ -88,8 +94,17 @@ class MainActivity : ComponentActivity() {
             val name = "일정 알림"
             val descriptionText = "일정 시간에 울리는 알림"
             val importance = NotificationManager.IMPORTANCE_HIGH
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
             val channel = NotificationChannel("schedule_channel", name, importance).apply {
                 description = descriptionText
+                enableLights(true)
+                enableVibration(true)
+                setSound(soundUri, audioAttributes) // 🔊 사운드 설정 추가
             }
 
             val notificationManager: NotificationManager =
@@ -97,4 +112,19 @@ class MainActivity : ComponentActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
+    }
+
 }

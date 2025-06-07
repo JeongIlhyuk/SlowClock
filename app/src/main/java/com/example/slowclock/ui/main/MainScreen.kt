@@ -5,14 +5,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,11 +29,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.common.components.ErrorCard
@@ -38,9 +48,14 @@ import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.TodayScheduleSection
 import com.example.slowclock.ui.main.components.TodaySummaryCard
+import com.example.slowclock.ui.main.components.SharedRemindersSection
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,15 +65,27 @@ fun MainScreen(
     onAddSchedule: () -> Unit = {},
     onEditSchedule: (String) -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onRefreshHandled: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val dateFormat = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
+    val timeFormat = remember { java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()) }
+
+    val context = LocalContext.current
+    var lastShareCode by remember { mutableStateOf("") }
+    val prefs = remember { context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE) }
+    val shareCode = prefs.getString("share_code", null)
+    val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
     // 일정 추가 후 자동 새로고침
     LaunchedEffect(shouldRefresh) {
         if (shouldRefresh) {
             viewModel.loadTodaySchedules()
+            val shareCode = prefs.getString("share_code", null)
+            if (!shareCode.isNullOrBlank()) {
+                viewModel.observeSharedReminders(shareCode)
+            }
             onRefreshHandled()
         }
     }
@@ -91,6 +118,13 @@ fun MainScreen(
         )
     }
 
+    LaunchedEffect(shareCode) {
+        if (!shareCode.isNullOrBlank() && shareCode != lastShareCode) {
+            lastShareCode = shareCode
+            viewModel.observeSharedReminders(shareCode)
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -111,27 +145,6 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    // 새로고침 버튼 (더 크게)
-                    IconButton(
-                        onClick = { viewModel.loadTodaySchedules() },
-                        modifier = Modifier.size(56.dp) // 48dp → 56dp
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(28.dp), // 24dp → 28dp
-                                color = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
-                                strokeWidth = 4.dp // 3dp → 4dp
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = "새로고침",
-                                tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
-                                modifier = Modifier.size(32.dp) // 28dp → 32dp
-                            )
-                        }
-                    }
-
                     // 프로필 버튼 (더 크게)
                     IconButton(
                         onClick = onNavigateToProfile,
@@ -142,6 +155,18 @@ fun MainScreen(
                             contentDescription = "내 정보",
                             tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
                             modifier = Modifier.size(32.dp) // 28dp → 32dp
+                        )
+                    }
+                    // 설정(share code) 버튼
+                    IconButton(
+                        onClick = onNavigateToSettings,
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "설정",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 },
@@ -199,6 +224,18 @@ fun MainScreen(
                     onToggleComplete = viewModel::toggleScheduleComplete,
                     onShowDetail = viewModel::showScheduleDetail,
                 )
+            }
+
+            // Shared Reminders Section
+            if (uiState.sharedReminders.isNotEmpty()) {
+                item {
+                    SharedRemindersSection(
+                        sharedReminders = uiState.sharedReminders,
+                        currentUserUid = currentUserUid,
+                        timeFormat = timeFormat,
+                        onToggleComplete = viewModel::toggleSharedReminderComplete
+                    )
+                }
             }
 
             // 빈 상태 처리

@@ -34,6 +34,9 @@ fun AppNavigation() {
                 onNavigateToProfile = {
                     navController.navigate("profile")
                 },
+                onNavigateToSettings = {
+                    navController.navigate("settings_share_code")
+                },
                 onRefreshHandled = {
                     navController.currentBackStackEntry
                         ?.savedStateHandle
@@ -74,6 +77,12 @@ fun AppNavigation() {
         composable("profile") {
             ProfileScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("settings_share_code") {
+            com.example.slowclock.ui.settings.SettingsScreenShareCode(
+                onReturn = { navController.popBackStack() }
             )
         }
     }
