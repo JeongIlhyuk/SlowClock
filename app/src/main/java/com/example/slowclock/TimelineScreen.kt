@@ -16,6 +16,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +29,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.ui.main.MainViewModel
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -46,6 +49,7 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
     // 드래그 중첩 방지
     var hasSwiped by remember { mutableStateOf(false) }
 
+
     // Timeline 날짜 선택 및 이동
     var calendar = remember{Calendar.getInstance()}
     val Date = remember { mutableStateOf(formatter.format(calendar.time))}
@@ -61,6 +65,14 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
             calendar.get(Calendar.DAY_OF_MONTH),
 
             )
+
+    val viewModel: MainViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    val selectedDate = remember { mutableStateOf(formatter.format(calendar.time)) }
+    val filteredSchedules = uiState.todaySchedules.filter { schedule ->
+        val scheduleDate = formatter.format(schedule.startTime.toDate())
+        scheduleDate == selectedDate.value
+    }
     // Timeline Screen 컨텐츠
     BoxWithConstraints(modifier= Modifier.fillMaxSize().padding(top=50.dp)) {
         Column(
@@ -113,7 +125,7 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
             // Default : 오늘 날짜, 이후 캘린더 조작 혹은 버튼 클릭으로 날짜 변경 가능
 
             Timeline(
-                items= , // Items : DB에서 사용자의 해당 날짜에 존재하는 일정들을 가져와서 사용
+                items= filteredSchedules, // Items : DB에서 사용자의 해당 날짜에 존재하는 일정들을 가져와서 사용
                 height= this@BoxWithConstraints.maxHeight
             )
 
