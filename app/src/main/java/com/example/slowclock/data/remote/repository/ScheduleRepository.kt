@@ -55,7 +55,22 @@ class ScheduleRepository {
             // 수동으로 Schedule 객체 변환 (deprecated API 회피)
             val allSchedules = documents.mapNotNull { document ->
                 try {
-                    document.toObject(Schedule::class.java)
+                    val schedule = Schedule(
+                        id = document.id,
+                        userId = document.getString("userId") ?: "",
+                        familyGroupId = document.getString("familyGroupId") ?: "",
+                        title = document.getString("title") ?: "",
+                        description = document.getString("description") ?: "",
+                        startTime = document.getTimestamp("startTime") ?: Timestamp.now(),
+                        endTime = document.getTimestamp("endTime"),
+                        isCompleted = document.getBoolean("isCompleted") ?: false, // 🔥 직접 매핑
+                        isRecurring = document.getBoolean("isRecurring") ?: false,
+                        recurringType = document.getString("recurringType"),
+                        createdAt = document.getTimestamp("createdAt") ?: Timestamp.now(),
+                        updatedAt = document.getTimestamp("updatedAt") ?: Timestamp.now()
+                    )
+
+                    schedule
                 } catch (e: Exception) {
                     Log.w("ScheduleRepo", "일정 파싱 실패: ${document.id}", e)
                     null

@@ -31,7 +31,8 @@ data class AddScheduleUiState(
     val canRetry: Boolean = false,
     // 편집 모드용 추가
     val isEditMode: Boolean = false,
-    val editingScheduleId: String = ""
+    val editingScheduleId: String = "",
+    val isCompleted: Boolean = false
 )
 
 class AddScheduleViewModel : ViewModel() {
@@ -111,6 +112,7 @@ class AddScheduleViewModel : ViewModel() {
                         endTime = endCal,
                         isRecurring = schedule.isRecurring,
                         recurringType = schedule.recurringType ?: "daily",
+                        isCompleted = schedule.isCompleted,
                         isLoading = false,
                         canSave = schedule.title.isNotBlank()
                     )
@@ -174,7 +176,8 @@ class AddScheduleViewModel : ViewModel() {
                     startTime = Timestamp(_uiState.value.selectedTime.time),
                     endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
                     isRecurring = _uiState.value.isRecurring,
-                    recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
+                    recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null,
+                    isCompleted = _uiState.value.isCompleted
                 )
 
                 val result = if (_uiState.value.isEditMode) {

@@ -1,6 +1,7 @@
 // app/src/main/java/com/example/slowclock/ui/main/components/ScheduleCard.kt
 package com.example.slowclock.ui.main.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -38,6 +39,7 @@ fun ScheduleCard(
     onToggleComplete: () -> Unit,
     onShowDetail: () -> Unit,
 ) {
+    Log.d("ScheduleCard", "렌더링: ${schedule.title} - isCompleted=${schedule.isCompleted}")
     val timeFormat = SimpleDateFormat("a h:mm", Locale.KOREAN)
 
     Card(

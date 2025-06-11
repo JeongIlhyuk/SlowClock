@@ -37,7 +37,6 @@ import com.example.slowclock.ui.main.components.CurrentTaskSection
 import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.TodayScheduleSection
-import com.example.slowclock.ui.main.components.TodaySummaryCard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -173,14 +172,6 @@ fun MainScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
-
-            // 📊 오늘 일정 요약
-            item {
-                TodaySummaryCard(
-                    totalCount = uiState.totalCount,
-                    completedCount = uiState.completedCount
-                )
-            }
 
             // 🟡 지금 할 일
             uiState.currentSchedule?.let { schedule ->
