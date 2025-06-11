@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.Card
@@ -27,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.util.hasExtraInfo
 import com.example.slowclock.util.isOngoing
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -42,11 +40,7 @@ fun CurrentTaskSection(
     val currentTime = System.currentTimeMillis()
 
     val displayTime = if (isOngoing(schedule, currentTime)) {
-        "~${
-            timeFormat.format(
-                schedule.endTime?.toDate() ?: Date(schedule.startTime.toDate().time + 60 * 60 * 1000)
-            )
-        }"
+        "~${timeFormat.format(schedule.endTime?.toDate() ?: Date(schedule.startTime.toDate().time + 60 * 60 * 1000))}"
     } else {
         timeFormat.format(schedule.startTime.toDate())
     }
@@ -60,98 +54,81 @@ fun CurrentTaskSection(
             Icon(
                 Icons.Outlined.AccessTime,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
-                modifier = Modifier.size(24.dp) // 20dp → 24dp
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp)) // 4dp → 8dp
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "지금 할 일",
-                style = MaterialTheme.typography.titleLarge, // fontSize 대신 style 사용
-                color = MaterialTheme.colorScheme.onSurface // 하드코딩 색상 제거
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = displayTime,
-                style = MaterialTheme.typography.bodyLarge, // fontSize 대신 style 사용
-                color = MaterialTheme.colorScheme.onSurfaceVariant // 하드코딩 색상 제거
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
-        // 현재 할 일 카드 (노란색 → tertiary 색상으로)
+        // 카드
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onShowDetail() },
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer // 하드코딩 색상 제거
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
             ),
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // 왼쪽 강조 바 (더 두껍게)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                // 왼쪽 강조 바
                 Box(
                     modifier = Modifier
-                        .width(6.dp) // 4dp → 6dp
-                        .height(80.dp) // 60dp → 80dp
-                        .background(MaterialTheme.colorScheme.tertiary) // 하드코딩 색상 제거
+                        .width(6.dp)
+                        .height(80.dp)
+                        .background(MaterialTheme.colorScheme.tertiary)
                         .align(Alignment.CenterStart)
+                )
+
+                // 오른쪽 상단 시간
+                Text(
+                    text = displayTime,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(20.dp)
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp) // 16dp → 20dp
-                        .padding(start = 12.dp), // 8dp → 12dp
+                        .padding(20.dp)
+                        .padding(start = 12.dp, end = 80.dp), // 시간 텍스트 공간 확보
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Notifications,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary, // 하드코딩 색상 제거
-                        modifier = Modifier.size(28.dp) // 24dp → 28dp
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(28.dp)
                     )
-                    Spacer(modifier = Modifier.width(16.dp)) // 12dp → 16dp
 
-                    Column(modifier = Modifier.weight(1f)) {
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
                         Text(
                             text = schedule.title,
-                            style = MaterialTheme.typography.bodyLarge, // fontSize 대신 style 사용
-                            color = MaterialTheme.colorScheme.onTertiaryContainer // 하드코딩 색상 제거
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
 
-                        // 힌트 표시
-                        if (hasExtraInfo(schedule)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.MoreHoriz,
-                                    contentDescription = "상세정보 있음",
-                                    tint = MaterialTheme.colorScheme.tertiary, // 하드코딩 색상 제거
-                                    modifier = Modifier.size(20.dp) // 16dp → 20dp
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "터치하여 상세보기",
-                                    style = MaterialTheme.typography.bodySmall, // fontSize 대신 style 사용
-                                    color = MaterialTheme.colorScheme.tertiary // 하드코딩 색상 제거
-                                )
-                            }
+                        // 상세 설명 (있을 때만)
+                        if (schedule.description.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = schedule.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                            )
                         }
                     }
-
-                    // 진행 상태 표시
-                    Text(
-                        text = if (isOngoing(schedule, currentTime)) "진행중" else "예정",
-                        style = MaterialTheme.typography.bodyMedium, // fontSize 대신 style 사용
-                        color = MaterialTheme.colorScheme.tertiary, // 하드코딩 색상 제거
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
                 }
             }
         }

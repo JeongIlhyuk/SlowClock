@@ -110,13 +110,15 @@ fun ScheduleDetailDialog(
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        schedule.endTime?.let { endTime ->
-                            Text(
-                                text = "~ ${timeFormat.format(endTime.toDate())}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = if (schedule.endTime != null) {
+                                "~ ${timeFormat.format(schedule.endTime.toDate())}"
+                            } else {
+                                "~" // 종료 시간 없으면 물결표만
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 

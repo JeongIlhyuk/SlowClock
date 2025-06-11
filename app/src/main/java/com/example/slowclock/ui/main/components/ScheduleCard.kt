@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.slowclock.data.model.Schedule
-import com.example.slowclock.util.hasExtraInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -107,17 +105,6 @@ fun ScheduleCard(
                             style = MaterialTheme.typography.bodyMedium, // fontSize 대신 style 사용
                             color = MaterialTheme.colorScheme.onSurfaceVariant // 하드코딩 색상 제거
                         )
-
-                        // 힌트 표시
-                        if (hasExtraInfo(schedule)) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                Icons.Default.MoreHoriz,
-                                contentDescription = "상세정보 있음",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant, // 하드코딩 색상 제거
-                                modifier = Modifier.size(20.dp) // 16dp → 20dp
-                            )
-                        }
                     }
                 }
 
