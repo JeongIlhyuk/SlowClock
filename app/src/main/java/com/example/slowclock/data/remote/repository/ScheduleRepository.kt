@@ -196,14 +196,20 @@ class ScheduleRepository {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
 
-        val updatedSchedule = schedule.copy(
-            userId = uid, // 현재 사용자 ID로 강제 설정
-            updatedAt = Timestamp.now()
-        )
-
         return try {
             schedulesCollection.document(schedule.id)
-                .set(updatedSchedule)
+                .update(
+                    mapOf(
+                        "title" to schedule.title,
+                        "description" to schedule.description,
+                        "startTime" to schedule.startTime,
+                        "endTime" to schedule.endTime,
+                        "isRecurring" to schedule.isRecurring,
+                        "recurringType" to schedule.recurringType,
+                        "isCompleted" to schedule.isCompleted,
+                        "updatedAt" to Timestamp.now()
+                    )
+                )
                 .await()
 
             Log.d("ScheduleRepo", "일정 수정 성공: ${schedule.id}")
@@ -266,12 +272,22 @@ class ScheduleRepository {
                 return ScheduleResult.Error(AppError.NotFoundError)
             }
 
-            val schedule = document.toObject(Schedule::class.java)
-            if (schedule != null) {
-                ScheduleResult.Success(schedule)
-            } else {
-                ScheduleResult.Error(AppError.InvalidDataError)
-            }
+            val schedule = Schedule(
+                id = document.id,
+                userId = document.getString("userId") ?: "",
+                familyGroupId = document.getString("familyGroupId") ?: "",
+                title = document.getString("title") ?: "",
+                description = document.getString("description") ?: "",
+                startTime = document.getTimestamp("startTime") ?: Timestamp.now(),
+                endTime = document.getTimestamp("endTime"),
+                isCompleted = document.getBoolean("isCompleted") ?: false, // 🔥 직접 매핑
+                isRecurring = document.getBoolean("isRecurring") ?: false,
+                recurringType = document.getString("recurringType"),
+                createdAt = document.getTimestamp("createdAt") ?: Timestamp.now(),
+                updatedAt = document.getTimestamp("updatedAt") ?: Timestamp.now()
+            )
+
+            ScheduleResult.Success(schedule)
 
         } catch (e: FirebaseFirestoreException) {
             Log.e("ScheduleRepo", "일정 조회 실패: ${e.code}", e)
