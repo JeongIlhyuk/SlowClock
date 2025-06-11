@@ -25,35 +25,57 @@ fun TodayScheduleSection(
     onToggleComplete: (String) -> Unit,
     onShowDetail: (String) -> Unit,
 ) {
+    val (completed, remaining) = schedules.partition { it.isCompleted }
+
     Column {
+        // 섹션 제목
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 12.dp) // 8dp → 12dp
+            modifier = Modifier.padding(bottom = 12.dp)
         ) {
             Icon(
                 Icons.Outlined.CalendarToday,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary, // 하드코딩 색상 제거
-                modifier = Modifier.size(24.dp) // 20dp → 24dp
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp)) // 4dp → 8dp
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "오늘의 일정",
-                style = MaterialTheme.typography.titleLarge, // fontSize 대신 style 사용
-                color = MaterialTheme.colorScheme.onSurface // 하드코딩 색상 제거
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp) // 8dp → 12dp
-        ) {
-            schedules.forEach { schedule ->
-                ScheduleCard(
-                    schedule = schedule,
-                    onToggleComplete = { onToggleComplete(schedule.id) },
-                    onShowDetail = { onShowDetail(schedule.id) },
-                )
+        // 완료한 일정
+        if (completed.isNotEmpty()) {
+            Text("✔ 완료한 일정", style = MaterialTheme.typography.titleMedium)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                completed.forEach { schedule ->
+                    ScheduleCard(
+                        schedule = schedule,
+                        onToggleComplete = { onToggleComplete(schedule.id) },
+                        onShowDetail = { onShowDetail(schedule.id) },
+                        isCompleted = schedule.isCompleted
+                    )
+                }
+            }
+        }
+
+        // 남은 일정
+        if (remaining.isNotEmpty()) {
+            Text("🕒 남은 일정", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                remaining.forEach { schedule ->
+                    ScheduleCard(
+                        schedule = schedule,
+                        onToggleComplete = { onToggleComplete(schedule.id) },
+                        onShowDetail = { onShowDetail(schedule.id) },
+                        isCompleted = schedule.isCompleted
+                    )
+                }
             }
         }
     }
 }
+

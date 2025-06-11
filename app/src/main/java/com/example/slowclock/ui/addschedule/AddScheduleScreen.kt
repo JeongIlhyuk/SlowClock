@@ -42,7 +42,8 @@ import com.example.slowclock.ui.addschedule.components.TitleInputSection
 fun AddScheduleScreen(
     scheduleId: String? = null,
     onNavigateBack: (Boolean) -> Unit,
-    viewModel: AddScheduleViewModel = viewModel()
+    viewModel: AddScheduleViewModel = viewModel(),
+    onNavigateToRecommendation: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isEditMode = !scheduleId.isNullOrBlank()
@@ -142,7 +143,9 @@ fun AddScheduleScreen(
             )
 
             // 추천 기능 영역
-            RecommendationPlaceholder()
+            RecommendationPlaceholder(
+                onNavigateToRecommendation = onNavigateToRecommendation
+            )
 
             // 에러 메시지
             if (uiState.error != null) {
