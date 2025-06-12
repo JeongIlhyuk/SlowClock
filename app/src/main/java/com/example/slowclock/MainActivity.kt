@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.example.slowclock.auth.AuthManager
 import com.example.slowclock.data.DummyDataManager
@@ -20,16 +21,37 @@ import com.example.slowclock.navigation.AppNavigation
 import com.example.slowclock.notification.ForegroundService
 import com.example.slowclock.notification.requestExactAlarmPermissionIfNeeded
 import com.example.slowclock.ui.theme.SlowClockTheme
+import com.firebase.ui.auth.AuthUI
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
     private val dummyDataManager = DummyDataManager()
 
+    private fun handleNewInstallation() {
+        val prefs = getSharedPreferences("app_state", MODE_PRIVATE)
+        val isAppEverLaunched = prefs.getBoolean("app_launched", false)
+
+        if (!isAppEverLaunched) {
+            // 이 앱이 처음 실행됨 = 새 설치
+            Log.d("INSTALL", "새 설치 감지 - Firebase 로그아웃")
+
+            FirebaseAuth.getInstance().signOut()
+            AuthUI.getInstance().signOut(this)
+
+            // 플래그 저장
+            prefs.edit { putBoolean("app_launched", true) }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("MAIN", "onCreate 시작")
+
+        handleNewInstallation()
 
         try {
             // AuthManager 초기화
@@ -137,7 +159,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun saveFcmTokenToFirestore() {
-        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                 val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
