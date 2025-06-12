@@ -5,22 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -30,16 +23,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.common.components.ErrorCard
@@ -47,16 +39,12 @@ import com.example.slowclock.ui.common.dialog.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.CurrentTaskSection
 import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
-import com.example.slowclock.ui.main.components.TodayScheduleSection
-import com.example.slowclock.ui.main.components.TodaySummaryCard
 import com.example.slowclock.ui.main.components.SharedRemindersSection
+import com.example.slowclock.ui.main.components.TodayScheduleSection
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
-import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +59,7 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val dateFormat = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
-    val timeFormat = remember { java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()) }
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     val context = LocalContext.current
     var lastShareCode by remember { mutableStateOf("") }
@@ -199,14 +187,6 @@ fun MainScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
-
-            // 📊 오늘 일정 요약
-            item {
-                TodaySummaryCard(
-                    totalCount = uiState.totalCount,
-                    completedCount = uiState.completedCount
-                )
-            }
 
             // 🟡 지금 할 일
             uiState.currentSchedule?.let { schedule ->
