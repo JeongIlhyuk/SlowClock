@@ -16,6 +16,7 @@ class FCMService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         val title = remoteMessage.notification?.title ?: "일정 알림"
         val body = remoteMessage.notification?.body ?: "새로운 알림이 있습니다."
+        android.util.Log.d("FCMService", "onMessageReceived: title=$title, body=$body, data=${remoteMessage.data}")
         sendNotification(title, body)
     }
 

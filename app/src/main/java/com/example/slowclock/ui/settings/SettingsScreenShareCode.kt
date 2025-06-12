@@ -37,6 +37,8 @@ fun SettingsScreenShareCode(onReturn: () -> Unit) {
         Button(onClick = {
             prefs.edit().putString("share_code", inputValue.text).apply()
             shareCode = inputValue.text
+            // Register watcher after saving share code
+            com.example.slowclock.ui.main.MainViewModel().addShareCodeWatcher(context, inputValue.text)
             onReturn()
         }) {
             Text("Save and Return")

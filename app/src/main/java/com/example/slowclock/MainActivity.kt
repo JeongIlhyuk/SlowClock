@@ -28,6 +28,7 @@ import com.example.slowclock.ui.theme.SlowClockTheme
 import kotlinx.coroutines.launch
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
     private lateinit var authManager: AuthManager
@@ -44,6 +45,8 @@ class MainActivity : ComponentActivity() {
                 onSuccess = {
                     Log.d("AUTH", "로그인 성공 콜백")
                     addDummyData()
+                    // FCM 토큰을 Firestore에 저장
+                    saveFcmTokenToFirestore()
                 },
                 onError = { error ->
                     Log.e("AUTH", "로그인 실패: $error")
@@ -123,6 +126,18 @@ class MainActivity : ComponentActivity() {
                     arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
                     1001
                 )
+            }
+        }
+    }
+    private fun saveFcmTokenToFirestore() {
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                db.collection("users").document(user.uid)
+                    .update("fcmToken", token)
+                    .addOnSuccessListener { Log.d("FCM", "로그인 후 토큰 Firestore 저장 성공") }
+                    .addOnFailureListener { e -> Log.e("FCM", "로그인 후 토큰 Firestore 저장 실패", e) }
             }
         }
     }

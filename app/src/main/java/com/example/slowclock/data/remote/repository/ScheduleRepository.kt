@@ -1,9 +1,11 @@
 // app/src/main/java/com/example/slowclock/data/repository/ScheduleRepository.kt
 package com.example.slowclock.data.remote.repository
 
+import android.content.Context
 import android.util.Log
 import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.notification.GuardianNotifier
 import com.example.slowclock.util.AppError
 import com.example.slowclock.util.toAppError
 import com.google.firebase.Timestamp
@@ -337,5 +339,65 @@ class ScheduleRepository {
                 trySend(schedules)
             }
         awaitClose { listener.remove() }
+    }
+
+    // 공유코드로 같은 그룹의 모든 사용자에게 FCM 알림 발송
+    suspend fun sendNotificationToShareCodeMembers(
+        context: Context,
+        shareCode: String,
+        title: String,
+        message: String
+    ) {
+        val currentUid = auth.currentUser?.uid ?: return
+        val users = FirestoreDB.users
+            .whereEqualTo("shareCode", shareCode)
+            .get().await()
+            .documents
+            .mapNotNull { it }
+        for (userDoc in users) {
+            val uid = userDoc.getString("id") ?: continue
+            if (uid == currentUid) continue // Skip self
+            val fcmToken = userDoc.getString("fcmToken") ?: continue
+            GuardianNotifier.sendReminderToUser(context, fcmToken, title, message)
+        }
+
+        // Optimized: send to all tokens at once (if GuardianNotifier supports it)
+        val tokens = users
+            .filter { it.id != currentUid }
+            .mapNotNull { it.getString("fcmToken") }
+            .filter { it.isNotBlank() }
+        if (tokens.isNotEmpty()) {
+            GuardianNotifier.sendReminderToUsers(context, tokens, title, message)
+        }
+    }
+
+    // 🔔 공유코드로 FCM 토큰 리스트 가져오기 (자기 자신 제외)
+    suspend fun getFcmTokensByShareCode(shareCode: String): List<String> {
+        val currentUid = auth.currentUser?.uid ?: return emptyList()
+        return try {
+            val users = FirestoreDB.users
+                .whereEqualTo("shareCode", shareCode)
+                .get().await()
+            users.documents
+                .filter { it.id != currentUid }
+                .mapNotNull { it.getString("fcmToken") }
+                .filter { it.isNotBlank() }
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "FCM 토큰 조회 실패", e)
+            emptyList()
+        }
+    }
+
+    // 🔔 여러 사용자에게 FCM 알림 전송
+    suspend fun notifyShareCodeMembers(
+        context: Context,
+        shareCode: String,
+        title: String,
+        message: String
+    ) {
+        val tokens = getFcmTokensByShareCode(shareCode)
+        if (tokens.isNotEmpty()) {
+            GuardianNotifier.sendReminderToUsers(context, tokens, title, message)
+        }
     }
 }

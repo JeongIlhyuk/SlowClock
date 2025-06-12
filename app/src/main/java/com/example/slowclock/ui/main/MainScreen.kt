@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -233,7 +234,9 @@ fun MainScreen(
                         sharedReminders = uiState.sharedReminders,
                         currentUserUid = currentUserUid,
                         timeFormat = timeFormat,
-                        onToggleComplete = viewModel::toggleSharedReminderComplete
+                        onToggleComplete = { scheduleId ->
+                            viewModel.toggleSharedReminderComplete(scheduleId, context)
+                        }
                     )
                 }
             }
