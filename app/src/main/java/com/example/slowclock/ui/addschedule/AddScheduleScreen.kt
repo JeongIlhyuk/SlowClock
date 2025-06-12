@@ -36,6 +36,7 @@ import com.example.slowclock.ui.addschedule.components.RecommendationPlaceholder
 import com.example.slowclock.ui.addschedule.components.RecurringSection
 import com.example.slowclock.ui.addschedule.components.TimePickerSection
 import com.example.slowclock.ui.addschedule.components.TitleInputSection
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +48,7 @@ fun AddScheduleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val isEditMode = !scheduleId.isNullOrBlank()
+    val context = LocalContext.current
 
     LaunchedEffect(scheduleId) {
         if (!scheduleId.isNullOrBlank()) {
@@ -87,7 +89,7 @@ fun AddScheduleScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { viewModel.saveSchedule() },
+                onClick = { viewModel.saveSchedule(context) },
                 containerColor = if (uiState.canSave)
                     MaterialTheme.colorScheme.secondary
                 else
@@ -173,7 +175,7 @@ fun AddScheduleScreen(
                                 }
 
                                 Button(
-                                    onClick = { viewModel.retryLastAction() },
+                                    onClick = { viewModel.retryLastAction(context) },
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text("다시 시도")

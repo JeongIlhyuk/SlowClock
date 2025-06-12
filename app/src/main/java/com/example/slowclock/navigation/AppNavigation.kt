@@ -20,8 +20,6 @@ import com.example.slowclock.ui.main.MainViewModel
 import com.example.slowclock.ui.profile.ProfileScreen
 import com.example.slowclock.ui.settings.SettingsScreen
 
-// app/src/main/java/com/example/slowclock/navigation/AppNavigation.kt
-
 @Composable
 fun AppNavigation() {
     val mainViewModel: MainViewModel = viewModel()
@@ -30,6 +28,7 @@ fun AppNavigation() {
     val currentRoute by navController.currentBackStackEntryFlow.collectAsState(
         initial = navController.currentBackStackEntry
     )
+    
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -54,11 +53,14 @@ fun AppNavigation() {
                     onAddSchedule = {
                         navController.navigate("add_schedule")
                     },
-                    onEditSchedule = { scheduleId -> // 새로 추가
+                    onEditSchedule = { scheduleId ->
                         navController.navigate("edit_schedule/$scheduleId")
                     },
                     onNavigateToProfile = {
                         navController.navigate("profile")
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate("settings_share_code")
                     },
                     onRefreshHandled = {
                         navController.currentBackStackEntry
@@ -67,13 +69,17 @@ fun AppNavigation() {
                     }
                 )
             }
-            composable("done") { DoneScreen(
-                completed = uiState.todaySchedules.filter { it.isCompleted },
-                remaining = uiState.todaySchedules.filter { !it.isCompleted },
-                onToggleComplete = { schedule ->
-                    mainViewModel.toggleScheduleComplete(schedule.id)
-                }
-            ) }
+            
+            composable("done") { 
+                DoneScreen(
+                    completed = uiState.todaySchedules.filter { it.isCompleted },
+                    remaining = uiState.todaySchedules.filter { !it.isCompleted },
+                    onToggleComplete = { schedule ->
+                        mainViewModel.toggleScheduleComplete(schedule.id)
+                    }
+                ) 
+            }
+            
             composable("timeline") { TimelineScreen() }
             composable("settings") { SettingsScreen() }
 
@@ -88,16 +94,15 @@ fun AppNavigation() {
                         navController.popBackStack()
                     },
                     onNavigateToRecommendation = {
-                        navController.navigate("recommendation") // 추천 화면으로 이동
+                        navController.navigate("recommendation")
                     }
                 )
             }
 
-            // 편집 화면 추가
             composable("edit_schedule/{scheduleId}") { backStackEntry ->
                 val scheduleId = backStackEntry.arguments?.getString("scheduleId") ?: ""
                 AddScheduleScreen(
-                    scheduleId = scheduleId, // 편집 모드
+                    scheduleId = scheduleId,
                     onNavigateBack = { success ->
                         if (success) {
                             navController.previousBackStackEntry
@@ -107,7 +112,7 @@ fun AppNavigation() {
                         navController.popBackStack()
                     },
                     onNavigateToRecommendation = {
-                        navController.navigate("recommendation") // 추천 화면으로 이동
+                        navController.navigate("recommendation")
                     }
                 )
             }
@@ -119,7 +124,13 @@ fun AppNavigation() {
             }
 
             composable("recommendation") {
-                RecommendationScreen() // 추천 스크린 컴포저블
+                RecommendationScreen()
+            }
+            
+            composable("settings_share_code") {
+                com.example.slowclock.ui.settings.SettingsScreenShareCode(
+                    onReturn = { navController.popBackStack() }
+                )
             }
         }
     }

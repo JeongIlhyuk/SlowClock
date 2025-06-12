@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "slow-clock-scheduler",
+    "firebase deploy --only functions": "slow-clock-scheduler"
+  },
+  "targets": {},
+  "etags": {}
+}

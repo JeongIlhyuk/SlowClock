@@ -1,19 +1,28 @@
 // app/src/main/java/com/example/slowclock/ui/main/MainViewModel.kt
 package com.example.slowclock.ui.main
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.data.model.User
+import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.remote.repository.ScheduleRepository
 import com.example.slowclock.util.AppError
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 data class MainUiState(
     val todaySchedules: List<Schedule> = emptyList(),
+    val sharedReminders: List<Schedule> = emptyList(), // 공유 일정
     val currentSchedule: Schedule? = null,
     val completedCount: Int = 0,
     val totalCount: Int = 0,
@@ -22,11 +31,13 @@ data class MainUiState(
     val selectedScheduleForDetail: Schedule? = null,
     val canRetry: Boolean = false, // 재시도 가능 여부 추가
     val showDeleteConfirmDialog: Boolean = false,
-    val scheduleToDelete: Schedule? = null
+    val scheduleToDelete: Schedule? = null,
+    val sharedReminderOwners: Map<String, String> = emptyMap() // userId -> name
 )
 
 class MainViewModel : ViewModel() {
     private val scheduleRepository = ScheduleRepository()
+    private var sharedRemindersJob: Job? = null
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -224,4 +235,178 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
+    fun observeSharedReminders(shareCode: String?) {
+        if (shareCode.isNullOrBlank()) return
+        sharedRemindersJob?.cancel()
+        sharedRemindersJob = viewModelScope.launch {
+            scheduleRepository.observeSchedulesBySharedCode(shareCode).collectLatest { reminders ->
+                // Filter reminders to only include those with startTime on today's date
+                val today = java.util.Calendar.getInstance()
+                val filteredReminders = reminders.filter { schedule ->
+                    val cal = java.util.Calendar.getInstance().apply { time = schedule.startTime.toDate() }
+                    cal.get(java.util.Calendar.YEAR) == today.get(java.util.Calendar.YEAR) &&
+                    cal.get(java.util.Calendar.DAY_OF_YEAR) == today.get(java.util.Calendar.DAY_OF_YEAR)
+                }
+                _uiState.value = _uiState.value.copy(sharedReminders = filteredReminders)
+                // Optionally update owner names if needed
+                val userIds = filteredReminders.map { it.userId }.filter { it.isNotBlank() }.distinct()
+                val ownerMap = fetchUserNames(userIds)
+                _uiState.value = _uiState.value.copy(sharedReminderOwners = ownerMap)
+            }
+        }
+    }
+
+    private suspend fun fetchUserNames(userIds: List<String>): Map<String, String> = withContext(Dispatchers.IO) {
+        if (userIds.isEmpty()) return@withContext emptyMap()
+        try {
+            val usersCollection = FirestoreDB.users
+            val chunks = userIds.chunked(10) // Firestore whereIn max 10
+            val result = mutableMapOf<String, String>()
+            for (chunk in chunks) {
+                val docs = usersCollection.whereIn("id", chunk).get().await()
+                for (doc in docs.documents) {
+                    val user = doc.toObject(User::class.java)
+                    if (user != null) {
+                        result[user.id] = user.name
+                    }
+                }
+            }
+            result
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
+    fun toggleSharedReminderComplete(scheduleId: String, context: Context) {
+        viewModelScope.launch {
+            val schedule = _uiState.value.sharedReminders.find { it.id == scheduleId }
+            schedule?.let {
+                // Optimistic update
+                val updatedReminders = _uiState.value.sharedReminders.map { s ->
+                    if (s.id == scheduleId) s.copy(isCompleted = !s.isCompleted) else s
+                }
+                _uiState.value = _uiState.value.copy(sharedReminders = updatedReminders)
+
+                // Update in Firestore
+                when (val result = scheduleRepository.markScheduleAsCompleted(scheduleId, !it.isCompleted)) {
+                    is ScheduleRepository.ScheduleResult.Success -> {
+                        // Send FCM notification to shareCode members
+                        if (it.sharedCode.isNotBlank()) {
+                            val title = if (!it.isCompleted) "일정이 완료됨" else "일정이 미완료로 변경됨"
+                            val message = "${it.title} 일정이 ${if (!it.isCompleted) "완료" else "미완료"} 처리되었습니다."
+                            scheduleRepository.sendNotificationToShareCodeMembers(
+                                context,
+                                it.sharedCode,
+                                title,
+                                message
+                            )
+                        }
+                    }
+                    is ScheduleRepository.ScheduleResult.Error -> {
+                        // On error, reload shared reminders to revert
+                        val shareCode = it.sharedCode
+                        if (shareCode.isNotBlank()) {
+                            observeSharedReminders(shareCode)
+                        }
+                        _uiState.value = _uiState.value.copy(
+                            error = result.error,
+                            canRetry = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun notifyShareCodeMembersForSchedule(context: Context, schedule: Schedule, type: String) {
+        if (schedule.sharedCode.isBlank()) return
+        val (title, message) = when (type) {
+            "create" -> "새 일정이 추가되었습니다" to "${schedule.title} 일정이 추가되었습니다."
+            "edit" -> "일정이 수정되었습니다" to "${schedule.title} 일정이 수정되었습니다."
+            "delete" -> "일정이 삭제되었습니다" to "${schedule.title} 일정이 삭제되었습니다."
+            else -> return
+        }
+        scheduleRepository.sendNotificationToShareCodeMembers(context, schedule.sharedCode, title, message)
+    }
+
+    fun addSharedSchedule(schedule: Schedule, context: Context) = viewModelScope.launch {
+        val result = scheduleRepository.addSchedule(schedule)
+        if (result is ScheduleRepository.ScheduleResult.Success) {
+            notifyShareCodeMembersForSchedule(context, schedule, "create")
+        }
+    }
+
+    fun updateSharedSchedule(schedule: Schedule, context: Context) = viewModelScope.launch {
+        val result = scheduleRepository.updateSchedule(schedule)
+        if (result is ScheduleRepository.ScheduleResult.Success) {
+            notifyShareCodeMembersForSchedule(context, schedule, "edit")
+        }
+    }
+
+    fun deleteSharedSchedule(schedule: Schedule, context: Context) = viewModelScope.launch {
+        val result = scheduleRepository.deleteSchedule(schedule.id)
+        if (result is ScheduleRepository.ScheduleResult.Success) {
+            notifyShareCodeMembersForSchedule(context, schedule, "delete")
+        }
+    }
+
+    fun sendTestFcm(context: Context) {
+        viewModelScope.launch {
+            try {
+                val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                if (user != null) {
+                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    val userDoc = db.collection("users").document(user.uid).get().await()
+                    val fcmToken = userDoc.getString("fcmToken")
+                    if (!fcmToken.isNullOrBlank()) {
+                        com.example.slowclock.notification.GuardianNotifier.sendReminderToUser(
+                            context,
+                            fcmToken,
+                            "FCM 테스트",
+                            "이것은 테스트 메시지입니다."
+                        )
+                    } else {
+                        Log.e("TestFCM", "FCM 토큰이 없습니다.")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TestFCM", "테스트 FCM 전송 실패", e)
+            }
+        }
+    }
+
+    // --- ShareCode Watcher Logic ---
+    fun addShareCodeWatcher(context: Context, shareCode: String) {
+        Log.d("ShareCodeWatcher", "addShareCodeWatcher called with shareCode=$shareCode")
+        android.widget.Toast.makeText(context, "addShareCodeWatcher called", android.widget.Toast.LENGTH_SHORT).show()
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: return
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("shareCodeWatchers")
+                .document(shareCode)
+                .collection("tokens")
+                .document(user.uid)
+                .set(mapOf("fcmToken" to token))
+                .addOnSuccessListener {
+                    Log.d("ShareCodeWatcher", "Watcher added for shareCode=$shareCode, userId=${user.uid}, token=$token")
+                    android.widget.Toast.makeText(context, "Watcher added!", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ShareCodeWatcher", "Failed to add watcher for shareCode=$shareCode, userId=${user.uid}", e)
+                    android.widget.Toast.makeText(context, "Failed to add watcher: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    fun removeShareCodeWatcher(shareCode: String) {
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser ?: return
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        db.collection("shareCodeWatchers")
+            .document(shareCode)
+            .collection("tokens")
+            .document(user.uid)
+            .delete()
+    }
+    // --- End ShareCode Watcher Logic ---
 }

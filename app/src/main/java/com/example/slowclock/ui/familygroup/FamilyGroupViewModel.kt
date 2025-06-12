@@ -1,35 +1,29 @@
 package com.example.slowclock.ui.familygroup
 
-import android.app.Application
-import android.content.Context
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.slowclock.data.remote.repository.FamilyGroupRepository
+import com.example.slowclock.data.remote.repository.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class FamilyGroupViewModel(app: Application) : AndroidViewModel(app) {
-    private val repo = FamilyGroupRepository()
+class FamilyGroupViewModel : ViewModel() {
+    private val userRepository = UserRepository()
 
-    // 1. 그룹 생성 (이름 받아서 생성)
-    fun createFamilyGroup(name: String, onResult: (String?) -> Unit) {
+    private val _statusMessage = MutableStateFlow("")
+    val statusMessage: StateFlow<String> = _statusMessage
+
+    fun createGroup() {
         viewModelScope.launch {
-            val groupId = repo.createFamilyGroup(name)
-            onResult(groupId)
+            val result = userRepository.createOrJoinGroup()
+            _statusMessage.value = if (result) "새 그룹 생성 완료!" else "그룹 생성 실패"
         }
     }
 
-    // 2. 그룹 참가(멤버 추가)
-    fun joinFamilyGroup(groupId: String, memberId: String, onResult: (Boolean) -> Unit) {
+    fun joinGroup(inputGroupId: String) {
         viewModelScope.launch {
-            val success = repo.addMemberToGroup(groupId, memberId)
-            onResult(success)
-        }
-    }
-
-    // 3. 그룹 전체에 FCM 알림 발송
-    fun sendAlertToFamilyGroup(context: Context, groupId: String, title: String, message: String) {
-        viewModelScope.launch {
-            repo.sendAlertToGroup(context, groupId, title, message)
+            val result = userRepository.createOrJoinGroup(inputGroupId)
+            _statusMessage.value = if (result) "그룹 참가 완료!" else "그룹 참가 실패"
         }
     }
 }

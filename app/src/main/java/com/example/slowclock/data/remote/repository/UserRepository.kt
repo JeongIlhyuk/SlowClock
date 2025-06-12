@@ -18,6 +18,20 @@ class UserRepository {
     private val auth = FirebaseAuth.getInstance()
     private val usersCollection = FirestoreDB.users
 
+    // 6-character code generator
+    private suspend fun generateUniqueShareCode(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        while (true) {
+            val code = (1..6)
+                .map { chars.random() }
+                .joinToString("")
+            // Check uniqueness in Firestore
+            val exists = usersCollection
+                .whereEqualTo("shareCode", code)
+                .get().await().documents.isNotEmpty()
+            if (!exists) return code
+        }
+    }
 
     // 현재 로그인한 사용자 정보 가져오기
     suspend fun getCurrentUser(): User? {
@@ -33,7 +47,10 @@ class UserRepository {
     // 사용자 정보 저장/업데이트
     suspend fun saveUser(user: User): Boolean {
         return try {
-            usersCollection.document(user.id).set(user).await()
+            val userToSave = if (user.shareCode.isBlank()) {
+                user.copy(shareCode = generateUniqueShareCode())
+            } else user
+            usersCollection.document(user.id).set(userToSave).await()
             true
         } catch (e: Exception) {
             false

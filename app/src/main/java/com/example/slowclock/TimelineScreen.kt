@@ -149,4 +149,3 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
     }
 
 }
-
