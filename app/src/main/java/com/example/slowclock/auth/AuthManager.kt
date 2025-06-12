@@ -59,6 +59,15 @@ class AuthManager(private val activity: ComponentActivity) {
                         updatedAt = Timestamp.now()
                     )
                     FirestoreDB.users.document(uid).set(newUser).await()
+                } else {
+                    // Ensure name and email are always up to date
+                    val updates = mutableMapOf<String, Any>()
+                    if (userModel.name != name && name.isNotBlank()) updates["name"] = name
+                    if (userModel.email != email && email.isNotBlank()) updates["email"] = email
+                    if (updates.isNotEmpty()) {
+                        updates["updatedAt"] = Timestamp.now()
+                        FirestoreDB.users.document(uid).update(updates).await()
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("AUTH", "공유 코드 생성/저장 실패", e)
