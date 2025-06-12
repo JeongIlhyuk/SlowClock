@@ -7,16 +7,16 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.IdpResponse
-import com.google.firebase.auth.FirebaseAuth
 import com.example.slowclock.data.FirestoreDB
 import com.example.slowclock.data.model.User
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import com.google.firebase.Timestamp
 
 class AuthManager(private val activity: ComponentActivity) {
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -31,6 +31,11 @@ class AuthManager(private val activity: ComponentActivity) {
             if (result.resultCode == Activity.RESULT_OK) {
                 val user = firebaseAuth.currentUser
                 Log.d("AUTH", "로그인 성공: ${user?.displayName} (${user?.email})")
+                Log.d("AUTH", "=== 사용자 정보 확인 ===")
+                Log.d("AUTH", "displayName: '${user?.displayName}'")
+                Log.d("AUTH", "email: '${user?.email}'")
+                Log.d("AUTH", "photoUrl: '${user?.photoUrl}'")
+                Log.d("AUTH", "uid: '${user?.uid}'")
                 // Ensure shareCode exists for this user
                 user?.let { ensureShareCodeForUser(it.uid, it.displayName ?: "", it.email ?: "") }
                 onSuccess()
@@ -42,12 +47,12 @@ class AuthManager(private val activity: ComponentActivity) {
         }
     }
 
-    private fun ensureShareCodeForUser(uid: String, name: String, email: String) {
+    fun ensureShareCodeForUser(uid: String, name: String, email: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val userDoc = FirestoreDB.users.document(uid).get().await()
                 val userModel = userDoc.toObject(User::class.java)
-                if (userModel == null || userModel.shareCode.isNullOrBlank()) {
+                if (userModel == null || userModel.shareCode.isBlank()) {
                     // Generate unique 6-character code
                     val code = generateUniqueShareCode()
                     val newUser = User(
@@ -90,7 +95,13 @@ class AuthManager(private val activity: ComponentActivity) {
         try {
             val providers = arrayListOf(
                 AuthUI.IdpConfig.GoogleBuilder()
-                    .setScopes(listOf("https://www.googleapis.com/auth/calendar"))
+                    .setScopes(
+                        listOf(
+                            "https://www.googleapis.com/auth/userinfo.profile", // 프로필 이름
+                            "https://www.googleapis.com/auth/userinfo.email",   // 이메일
+                            "https://www.googleapis.com/auth/calendar"          // 기존 캘린더
+                        )
+                    )
                     .build()
             )
 
