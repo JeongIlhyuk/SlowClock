@@ -1,15 +1,29 @@
-// ui/done/DoneScreen.kt
+// app/src/main/java/com/example/slowclock/ui/done/DoneScreen.kt
 package com.example.slowclock.ui.done
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,16 +33,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.slowclock.data.model.Schedule
+import com.example.slowclock.ui.main.MainViewModel
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun DoneScreen(
-    completed: List<Schedule>,
-    remaining: List<Schedule>,
-    date: Date = Date(),
-    onToggleComplete: (Schedule) -> Unit = {} // optional toggle
+    mainViewModel: MainViewModel
 ) {
+    val uiState by mainViewModel.uiState.collectAsState()
+
+    val completed = uiState.todaySchedules.filter { it.isCompleted }
+    val remaining = uiState.todaySchedules.filter { !it.isCompleted }
+
     val formatter = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
     val timeFormatter = SimpleDateFormat("a h:mm", Locale.KOREAN)
 
@@ -44,7 +62,7 @@ fun DoneScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Text(
-            text = formatter.format(date),
+            text = formatter.format(Date()),
             fontSize = 16.sp,
             color = Color.DarkGray,
             modifier = Modifier
@@ -56,7 +74,14 @@ fun DoneScreen(
         if (completed.isNotEmpty()) {
             Section(title = "완료한 일정", icon = Icons.Default.CheckCircle, color = Color(0xFF3A5CCC)) {
                 completed.forEach {
-                    ScheduleCard(schedule = it, timeFormatter = timeFormatter, completed = true, onClick = onToggleComplete)
+                    ScheduleCard(
+                        schedule = it,
+                        timeFormatter = timeFormatter,
+                        completed = true,
+                        onClick = { schedule ->
+                            mainViewModel.toggleScheduleComplete(schedule.id)
+                        }
+                    )
                 }
             }
         }
@@ -64,7 +89,14 @@ fun DoneScreen(
         if (remaining.isNotEmpty()) {
             Section(title = "남은 일정", icon = Icons.Default.Notifications, color = Color(0xFF3A5CCC)) {
                 remaining.forEach {
-                    ScheduleCard(schedule = it, timeFormatter = timeFormatter, completed = false, onClick = onToggleComplete)
+                    ScheduleCard(
+                        schedule = it,
+                        timeFormatter = timeFormatter,
+                        completed = false,
+                        onClick = { schedule ->
+                            mainViewModel.toggleScheduleComplete(schedule.id)
+                        }
+                    )
                 }
             }
         }
@@ -77,8 +109,12 @@ fun DoneScreen(
             color = Color.DarkGray
         )
 
+        // 🔥 수정된 LinearProgressIndicator
         LinearProgressIndicator(
-            progress = if ((completed.size + remaining.size) == 0) 0f else completed.size.toFloat() / (completed.size + remaining.size),
+            progress = {
+                if ((completed.size + remaining.size) == 0) 0f
+                else completed.size.toFloat() / (completed.size + remaining.size)
+            },
             color = Color(0xFF00A152),
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -129,10 +165,9 @@ fun ScheduleCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 왼쪽: 체크박스 + 일정 정보
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f) // 남은 공간 전부 차지해서 오른쪽으로 밀기 가능하게
+                modifier = Modifier.weight(1f)
             ) {
                 Checkbox(
                     checked = completed,
@@ -148,7 +183,6 @@ fun ScheduleCard(
                 }
             }
 
-            // 오른쪽: 완료 텍스트
             if (completed) {
                 Text(
                     text = "완료",

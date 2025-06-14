@@ -1,3 +1,4 @@
+// app/src/main/java/com/example/slowclock/navigation/AppNavigation.kt
 package com.example.slowclock.navigation
 
 import RecommendationScreen
@@ -23,12 +24,11 @@ import com.example.slowclock.ui.settings.SettingsScreen
 @Composable
 fun AppNavigation() {
     val mainViewModel: MainViewModel = viewModel()
-    val uiState by mainViewModel.uiState.collectAsState()
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryFlow.collectAsState(
         initial = navController.currentBackStackEntry
     )
-    
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -48,7 +48,9 @@ fun AppNavigation() {
                     ?.savedStateHandle
                     ?.get<Boolean>("schedule_added")
 
+                // 🔥 MainViewModel을 직접 전달
                 MainScreen(
+                    viewModel = mainViewModel, // 명시적으로 전달
                     shouldRefresh = result == true,
                     onAddSchedule = {
                         navController.navigate("add_schedule")
@@ -69,17 +71,13 @@ fun AppNavigation() {
                     }
                 )
             }
-            
-            composable("done") { 
+
+            composable("done") {
                 DoneScreen(
-                    completed = uiState.todaySchedules.filter { it.isCompleted },
-                    remaining = uiState.todaySchedules.filter { !it.isCompleted },
-                    onToggleComplete = { schedule ->
-                        mainViewModel.toggleScheduleComplete(schedule.id)
-                    }
-                ) 
+                    mainViewModel = mainViewModel
+                )
             }
-            
+
             composable("timeline") { TimelineScreen() }
             composable("settings") { SettingsScreen() }
 
@@ -126,7 +124,7 @@ fun AppNavigation() {
             composable("recommendation") {
                 RecommendationScreen()
             }
-            
+
             composable("settings_share_code") {
                 com.example.slowclock.ui.settings.SettingsScreenShareCode(
                     onReturn = { navController.popBackStack() }
