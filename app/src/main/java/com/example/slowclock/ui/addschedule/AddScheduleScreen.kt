@@ -30,13 +30,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.addschedule.components.RecommendationPlaceholder
 import com.example.slowclock.ui.addschedule.components.RecurringSection
 import com.example.slowclock.ui.addschedule.components.TimePickerSection
 import com.example.slowclock.ui.addschedule.components.TitleInputSection
-import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,7 +138,7 @@ fun AddScheduleScreen(
 
             // 반복 일정 설정 (분리된 컴포넌트)
             RecurringSection(
-                isRecurring = uiState.isRecurring,
+                recurring = uiState.recurring,
                 recurringType = uiState.recurringType,
                 onRecurringChange = viewModel::updateRecurring,
                 onRecurringTypeChange = viewModel::updateRecurringType

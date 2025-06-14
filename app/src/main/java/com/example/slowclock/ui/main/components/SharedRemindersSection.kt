@@ -1,6 +1,5 @@
 package com.example.slowclock.ui.main.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.slowclock.data.model.Schedule
 import java.text.SimpleDateFormat
-import java.util.Date
 
 @Composable
 fun SharedRemindersSection(
@@ -61,23 +59,23 @@ fun SharedRemindersSection(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = if (schedule.isCompleted) "완료됨" else "미완료",
-                                    tint = if (schedule.isCompleted) Color(0xFF388E3C) else Color.Red,
+                                    contentDescription = if (schedule.completed) "완료됨" else "미완료",
+                                    tint = if (schedule.completed) Color(0xFF388E3C) else Color.Red,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = if (schedule.isCompleted) "완료됨" else "미완료",
-                                tint = if (schedule.isCompleted) Color(0xFF388E3C) else Color.Red,
+                                contentDescription = if (schedule.completed) "완료됨" else "미완료",
+                                tint = if (schedule.completed) Color(0xFF388E3C) else Color.Red,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
                         Text(
-                            text = if (schedule.isCompleted) "완료됨" else "미완료",
+                            text = if (schedule.completed) "완료됨" else "미완료",
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (schedule.isCompleted) Color(0xFF388E3C) else Color.Red,
+                            color = if (schedule.completed) Color(0xFF388E3C) else Color.Red,
                             modifier = Modifier.padding(start = 4.dp, end = 8.dp)
                         )
                         Text(

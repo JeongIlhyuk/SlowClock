@@ -49,31 +49,31 @@ class ScheduleRepository {
             val updatedAt = data["updatedAt"] as? Timestamp ?: Timestamp.now()
 
             // Boolean 필드들을 명시적으로 변환
-            val isCompleted = when (val completed = data["isCompleted"]) {
+            val completed = when (val completed = data["completed"]) {
                 is Boolean -> completed
                 is String -> completed.toBoolean()
                 else -> {
                     Log.w(
                         "ScheduleRepo",
-                        "isCompleted 필드 파싱 실패: $completed (타입: ${completed?.javaClass})"
+                        "completed 필드 파싱 실패: $completed (타입: ${completed?.javaClass})"
                     )
                     false
                 }
             }
 
-            val isRecurring = when (val recurring = data["isRecurring"]) {
+            val recurring = when (val recurring = data["recurring"]) {
                 is Boolean -> recurring
                 is String -> recurring.toBoolean()
                 else -> false
             }
 
-            val isSkipped = when (val skipped = data["isSkipped"]) {
+            val skipped = when (val skipped = data["skipped"]) {
                 is Boolean -> skipped
                 is String -> skipped.toBoolean()
                 else -> false
             }
 
-            Log.d("ScheduleRepo", "파싱된 일정: $title, 완료상태: $isCompleted (원본: ${data["isCompleted"]})")
+            Log.d("ScheduleRepo", "파싱된 일정: $title, 완료상태: $completed (원본: ${data["completed"]})")
 
             Schedule(
                 id = id,
@@ -84,9 +84,9 @@ class ScheduleRepository {
                 description = description,
                 startTime = startTime,
                 endTime = endTime,
-                isCompleted = isCompleted,
-                isRecurring = isRecurring,
-                isSkipped = isSkipped,
+                completed = completed,
+                recurring = recurring,
+                skipped = skipped,
                 recurringType = recurringType,
                 createdAt = createdAt,
                 updatedAt = updatedAt
@@ -141,10 +141,10 @@ class ScheduleRepository {
             Log.d("ScheduleRepo", "=== 최종 결과 ===")
             Log.d("ScheduleRepo", "전체 일정: ${allSchedules.size}개")
             Log.d("ScheduleRepo", "오늘 일정: ${todaySchedules.size}개")
-            Log.d("ScheduleRepo", "완료된 일정: ${todaySchedules.count { it.isCompleted }}개")
+            Log.d("ScheduleRepo", "완료된 일정: ${todaySchedules.count { it.completed }}개")
 
             todaySchedules.forEach { schedule ->
-                Log.d("ScheduleRepo", "- ${schedule.title}: 완료=${schedule.isCompleted}")
+                Log.d("ScheduleRepo", "- ${schedule.title}: 완료=${schedule.completed}")
             }
 
             ScheduleResult.Success(todaySchedules)
@@ -221,24 +221,24 @@ class ScheduleRepository {
     // 일정 완료 상태 변경
     suspend fun markScheduleAsCompleted(
         scheduleId: String,
-        isCompleted: Boolean = true
+        completed: Boolean = true
     ): ScheduleResult<Unit> {
         if (scheduleId.isBlank()) {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
 
         return try {
-            Log.d("ScheduleRepo", "완료 상태 변경 시도: $scheduleId -> $isCompleted")
+            Log.d("ScheduleRepo", "완료 상태 변경 시도: $scheduleId -> $completed")
 
             schedulesCollection.document(scheduleId)
                 .update(
                     mapOf(
-                        "isCompleted" to isCompleted,
+                        "completed" to completed,
                         "updatedAt" to Timestamp.now()
                     )
                 ).await()
 
-            Log.d("ScheduleRepo", "완료 상태 변경 성공: $scheduleId -> $isCompleted")
+            Log.d("ScheduleRepo", "완료 상태 변경 성공: $scheduleId -> $completed")
             ScheduleResult.Success(Unit)
 
         } catch (e: FirebaseFirestoreException) {
@@ -383,7 +383,7 @@ class ScheduleRepository {
             } else {
                 Log.i("ScheduleRepo", "공유코드로 불러온 일정: ${schedules.size}")
                 schedules.forEach { schedule ->
-                    Log.d("ScheduleRepo", "공유 일정: ${schedule.title}, 완료: ${schedule.isCompleted}")
+                    Log.d("ScheduleRepo", "공유 일정: ${schedule.title}, 완료: ${schedule.completed}")
                 }
             }
             ScheduleResult.Success(schedules)

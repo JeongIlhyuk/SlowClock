@@ -9,7 +9,7 @@ import com.example.slowclock.data.model.Schedule
 fun hasExtraInfo(schedule: Schedule): Boolean {
     return schedule.description.isNotBlank() ||
             schedule.endTime != null ||
-            schedule.isRecurring
+            schedule.recurring
 }
 
 /**

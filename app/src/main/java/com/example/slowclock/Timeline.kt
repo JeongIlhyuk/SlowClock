@@ -27,7 +27,6 @@ import java.util.Locale
 @Composable
 fun Timeline(
     height: Dp,
-    modifier: Modifier = Modifier,
     items: List<Schedule>
 ) {
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault()) // 시간 포맷
@@ -78,7 +77,11 @@ fun Timeline(
                 // 일정 표시
                 Column(
                     modifier = Modifier
-                        .background(color = if(item.isCompleted) Color(0xFFADFF2F) else if(item.isSkipped) Color(0xFFFFB6C1) else Color(0xFFE0FFFF))
+                        .background(
+                            color = if (item.completed) Color(0xFFADFF2F) else if (item.skipped) Color(
+                                0xFFFFB6C1
+                            ) else Color(0xFFE0FFFF)
+                        )
                         .padding(8.dp)
                 ) {
                     Text(text = item.title,

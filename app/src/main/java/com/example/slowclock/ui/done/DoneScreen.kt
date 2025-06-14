@@ -44,8 +44,8 @@ fun DoneScreen(
 ) {
     val uiState by mainViewModel.uiState.collectAsState()
 
-    val completed = uiState.todaySchedules.filter { it.isCompleted }
-    val remaining = uiState.todaySchedules.filter { !it.isCompleted }
+    val completed = uiState.todaySchedules.filter { it.completed }
+    val remaining = uiState.todaySchedules.filter { !it.completed }
 
     val formatter = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
     val timeFormatter = SimpleDateFormat("a h:mm", Locale.KOREAN)

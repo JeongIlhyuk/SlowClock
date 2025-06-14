@@ -25,7 +25,7 @@ fun TodayScheduleSection(
     onToggleComplete: (String) -> Unit,
     onShowDetail: (String) -> Unit,
 ) {
-    val (completed, remaining) = schedules.partition { it.isCompleted }
+    val (completed, remaining) = schedules.partition { it.completed }
 
     Column {
         // 섹션 제목
@@ -56,7 +56,7 @@ fun TodayScheduleSection(
                         schedule = schedule,
                         onToggleComplete = { onToggleComplete(schedule.id) },
                         onShowDetail = { onShowDetail(schedule.id) },
-                        isCompleted = schedule.isCompleted
+                        completed = schedule.completed
                     )
                 }
             }
@@ -71,7 +71,7 @@ fun TodayScheduleSection(
                         schedule = schedule,
                         onToggleComplete = { onToggleComplete(schedule.id) },
                         onShowDetail = { onShowDetail(schedule.id) },
-                        isCompleted = schedule.isCompleted
+                        completed = schedule.completed
                     )
                 }
             }
