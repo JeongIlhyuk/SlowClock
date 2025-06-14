@@ -33,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.slowclock.ui.common.components.ErrorCard
 import com.example.slowclock.ui.common.dialog.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.CurrentTaskSection
@@ -49,7 +48,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = viewModel(),
+    viewModel: MainViewModel,
     shouldRefresh: Boolean = false,
     onAddSchedule: () -> Unit = {},
     onEditSchedule: (String) -> Unit = {},
