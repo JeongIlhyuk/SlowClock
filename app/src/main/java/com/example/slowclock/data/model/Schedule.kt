@@ -2,6 +2,7 @@ package com.example.slowclock.data.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 
 // Schedule 모델
 data class Schedule(
@@ -13,7 +14,8 @@ data class Schedule(
     val description: String = "",
     val startTime: Timestamp = Timestamp.now(),
     val endTime: Timestamp? = null,
-    val isCompleted: Boolean = false,
+    @get:PropertyName("completed") @set:PropertyName("completed")
+    var isCompleted: Boolean = false,
     val isRecurring: Boolean = false,
     val isSkipped: Boolean = false,
     val recurringType: String? = null, // "daily", "weekly", "monthly"

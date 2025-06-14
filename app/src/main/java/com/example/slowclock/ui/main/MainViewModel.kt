@@ -293,8 +293,13 @@ class MainViewModel : ViewModel() {
                     is ScheduleRepository.ScheduleResult.Success -> {
                         // Send FCM notification to shareCode members
                         if (it.sharedCode.isNotBlank()) {
-                            val title = if (!it.isCompleted) "일정이 완료됨" else "일정이 미완료로 변경됨"
-                            val message = "${it.title} 일정이 ${if (!it.isCompleted) "완료" else "미완료"} 처리되었습니다."
+                            val (title, message) = if (!it.isCompleted) {
+                                // Marked as complete
+                                "완료되었습니다" to "${it.title} 일정이 완료되었습니다."
+                            } else {
+                                // Marked as incomplete
+                                "상태 미완료로 바꿨습니다" to "${it.title} 일정이 미완료로 변경되었습니다."
+                            }
                             scheduleRepository.sendNotificationToShareCodeMembers(
                                 context,
                                 it.sharedCode,

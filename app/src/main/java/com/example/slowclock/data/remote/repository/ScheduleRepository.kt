@@ -158,7 +158,7 @@ class ScheduleRepository {
             schedulesCollection.document(scheduleId)
                 .update(
                     mapOf(
-                        "isCompleted" to isCompleted,
+                        "completed" to isCompleted,
                         "updatedAt" to Timestamp.now()
                     )
                 ).await()
