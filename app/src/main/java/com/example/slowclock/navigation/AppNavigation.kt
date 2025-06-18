@@ -12,7 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.slowclock.TimelineScreen
+import com.example.slowclock.ui.timeline.TimelineScreen
 import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.common.components.BottomNavigationBar
 import com.example.slowclock.ui.done.DoneScreen
@@ -78,7 +78,7 @@ fun AppNavigation() {
                 )
             }
 
-            composable("timeline") { TimelineScreen() }
+            composable("timeline") { TimelineScreen(mainViewModel) }
             composable("settings") { SettingsScreen() }
 
             composable("add_schedule") {

@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 data class MainUiState(
     val todaySchedules: List<Schedule> = emptyList(),
@@ -43,86 +44,168 @@ class MainViewModel : ViewModel() {
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
-        loadTodaySchedules()
+        loadSchedules(Calendar.getInstance())
     }
 
-    fun loadTodaySchedules() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null,
-                canRetry = false
-            )
+//    fun loadTodaySchedules() {
+//        viewModelScope.launch {
+//            _uiState.value = _uiState.value.copy(
+//                isLoading = true,
+//                error = null,
+//                canRetry = false
+//            )
+//
+//            try {
+//                when (val result = scheduleRepository.getTodaySchedules()) {
+//                    is ScheduleRepository.ScheduleResult.Success -> {
+//                        val schedules = result.data
+//                        val currentTime = System.currentTimeMillis()
+//
+//                        val currentSchedule = schedules
+//                            .filter { !it.completed }
+//                            .let { incompleteSchedules ->
+//                                // 1단계: 현재 진행 중인 일정들
+//                                val ongoingSchedules = incompleteSchedules.filter { schedule ->
+//                                    val startTime = schedule.startTime.toDate().time
+//                                    val endTime =
+//                                        schedule.endTime?.toDate()?.time
+//                                            ?: (startTime + 60 * 60 * 1000)
+//                                    currentTime >= startTime && currentTime <= endTime
+//                                }
+//
+//                                if (ongoingSchedules.isNotEmpty()) {
+//                                    // 진행 중: 끝나는 시간 빠른 순
+//                                    ongoingSchedules.minByOrNull { schedule ->
+//                                        schedule.endTime?.toDate()?.time
+//                                            ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+//                                    }
+//                                } else {
+//                                    // 진행 중 없음: 시작 시간 빠른 순 → 끝나는 시간 빠른 순
+//                                    incompleteSchedules
+//                                        .filter { it.startTime.toDate().time > currentTime }
+//                                        .sortedWith(
+//                                            compareBy<Schedule> { it.startTime.toDate().time }
+//                                                .thenBy { schedule ->
+//                                                    schedule.endTime?.toDate()?.time
+//                                                        ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+//                                                }
+//                                        )
+//                                        .firstOrNull()
+//                                }
+//                            }
+//
+//                        _uiState.value = MainUiState(
+//                            todaySchedules = schedules,
+//                            currentSchedule = currentSchedule,
+//                            completedCount = schedules.count { it.completed },
+//                            totalCount = schedules.size,
+//                            isLoading = false
+//                        )
+//
+//                        Log.d("MainViewModel", "일정 로드 성공: ${schedules.size}개")
+//                    }
+//
+//                    is ScheduleRepository.ScheduleResult.Error -> {
+//                        Log.e("MainViewModel", "일정 로드 실패: ${result.error.message}")
+//                        _uiState.value = _uiState.value.copy(
+//                            isLoading = false,
+//                            error = result.error,
+//                            canRetry = true // 재시도 가능
+//                        )
+//                    }
+//                }
+//            } catch (e: Exception) {
+//                Log.e("MainViewModel", "예상치 못한 에러", e)
+//                _uiState.value = _uiState.value.copy(
+//                    isLoading = false,
+//                    error = AppError.GeneralError("일정을 불러오는 중 문제가 발생했습니다"),
+//                    canRetry = true
+//                )
+//            }
+//        }
+//    }
+fun loadSchedules(calendar: Calendar) {
+    val scheduleDate = calendar.clone() as Calendar
+    scheduleDate.set(Calendar.HOUR_OF_DAY, 0)
+    scheduleDate.set(Calendar.MINUTE, 0)
+    scheduleDate.set(Calendar.SECOND, 0)
+    scheduleDate.set(Calendar.MILLISECOND, 0)
+    viewModelScope.launch {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null,
+            canRetry = false
+        )
 
-            try {
-                when (val result = scheduleRepository.getTodaySchedules()) {
-                    is ScheduleRepository.ScheduleResult.Success -> {
-                        val schedules = result.data
-                        val currentTime = System.currentTimeMillis()
+        try {
+            when (val result = scheduleRepository.getSchedulesForDate(scheduleDate)) {
+                is ScheduleRepository.ScheduleResult.Success -> {
+                    val schedules = result.data
+                    val currentTime = System.currentTimeMillis()
 
-                        val currentSchedule = schedules
-                            .filter { !it.completed }
-                            .let { incompleteSchedules ->
-                                // 1단계: 현재 진행 중인 일정들
-                                val ongoingSchedules = incompleteSchedules.filter { schedule ->
-                                    val startTime = schedule.startTime.toDate().time
-                                    val endTime =
-                                        schedule.endTime?.toDate()?.time
-                                            ?: (startTime + 60 * 60 * 1000)
-                                    currentTime >= startTime && currentTime <= endTime
-                                }
-
-                                if (ongoingSchedules.isNotEmpty()) {
-                                    // 진행 중: 끝나는 시간 빠른 순
-                                    ongoingSchedules.minByOrNull { schedule ->
-                                        schedule.endTime?.toDate()?.time
-                                            ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
-                                    }
-                                } else {
-                                    // 진행 중 없음: 시작 시간 빠른 순 → 끝나는 시간 빠른 순
-                                    incompleteSchedules
-                                        .filter { it.startTime.toDate().time > currentTime }
-                                        .sortedWith(
-                                            compareBy<Schedule> { it.startTime.toDate().time }
-                                                .thenBy { schedule ->
-                                                    schedule.endTime?.toDate()?.time
-                                                        ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
-                                                }
-                                        )
-                                        .firstOrNull()
-                                }
+                    val currentSchedule = schedules
+                        .filter { !it.completed }
+                        .let { incompleteSchedules ->
+                            // 1단계: 현재 진행 중인 일정들
+                            val ongoingSchedules = incompleteSchedules.filter { schedule ->
+                                val startTime = schedule.startTime.toDate().time
+                                val endTime =
+                                    schedule.endTime?.toDate()?.time
+                                        ?: (startTime + 60 * 60 * 1000)
+                                currentTime >= startTime && currentTime <= endTime
                             }
 
-                        _uiState.value = MainUiState(
-                            todaySchedules = schedules,
-                            currentSchedule = currentSchedule,
-                            completedCount = schedules.count { it.completed },
-                            totalCount = schedules.size,
-                            isLoading = false
-                        )
+                            if (ongoingSchedules.isNotEmpty()) {
+                                // 진행 중: 끝나는 시간 빠른 순
+                                ongoingSchedules.minByOrNull { schedule ->
+                                    schedule.endTime?.toDate()?.time
+                                        ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+                                }
+                            } else {
+                                // 진행 중 없음: 시작 시간 빠른 순 → 끝나는 시간 빠른 순
+                                incompleteSchedules
+                                    .filter { it.startTime.toDate().time > currentTime }
+                                    .sortedWith(
+                                        compareBy<Schedule> { it.startTime.toDate().time }
+                                            .thenBy { schedule ->
+                                                schedule.endTime?.toDate()?.time
+                                                    ?: (schedule.startTime.toDate().time + 60 * 60 * 1000)
+                                            }
+                                    )
+                                    .firstOrNull()
+                            }
+                        }
 
-                        Log.d("MainViewModel", "일정 로드 성공: ${schedules.size}개")
-                    }
+                    _uiState.value = MainUiState(
+                        todaySchedules = schedules,
+                        currentSchedule = currentSchedule,
+                        completedCount = schedules.count { it.completed },
+                        totalCount = schedules.size,
+                        isLoading = false
+                    )
 
-                    is ScheduleRepository.ScheduleResult.Error -> {
-                        Log.e("MainViewModel", "일정 로드 실패: ${result.error.message}")
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            error = result.error,
-                            canRetry = true // 재시도 가능
-                        )
-                    }
+                    Log.d("MainViewModel", "일정 로드 성공: ${schedules.size}개")
                 }
-            } catch (e: Exception) {
-                Log.e("MainViewModel", "예상치 못한 에러", e)
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = AppError.GeneralError("일정을 불러오는 중 문제가 발생했습니다"),
-                    canRetry = true
-                )
+
+                is ScheduleRepository.ScheduleResult.Error -> {
+                    Log.e("MainViewModel", "일정 로드 실패: ${result.error.message}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.error,
+                        canRetry = true // 재시도 가능
+                    )
+                }
             }
+        } catch (e: Exception) {
+            Log.e("MainViewModel", "예상치 못한 에러", e)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = AppError.GeneralError("일정을 불러오는 중 문제가 발생했습니다"),
+                canRetry = true
+            )
         }
     }
+}
 
     fun toggleScheduleComplete(scheduleId: String) {
         viewModelScope.launch {
@@ -156,7 +239,7 @@ class MainViewModel : ViewModel() {
                     is ScheduleRepository.ScheduleResult.Error -> {
                         Log.e("MainViewModel", "완료 상태 변경 실패: ${result.error.message}")
                         // 실패 시 원래 상태로 복구
-                        loadTodaySchedules()
+                        loadSchedules(Calendar.getInstance())
 
                         _uiState.value = _uiState.value.copy(
                             error = result.error,
@@ -183,7 +266,7 @@ class MainViewModel : ViewModel() {
 
     fun retryLastAction() {
         clearError()
-        loadTodaySchedules()
+        loadSchedules(Calendar.getInstance())
     }
 
     fun showDeleteConfirmDialog(scheduleId: String) {
