@@ -40,6 +40,7 @@ import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.SharedRemindersSection
 import com.example.slowclock.ui.main.components.TodayScheduleSection
+import java.util.Calendar
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -66,10 +67,11 @@ fun MainScreen(
     val shareCode = prefs.getString("share_code", null)
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
+    val calendar = Calendar.getInstance()
     // 일정 추가 후 자동 새로고침
     LaunchedEffect(shouldRefresh) {
         if (shouldRefresh) {
-            viewModel.loadTodaySchedules()
+            viewModel.loadSchedules(calendar)
             val shareCode = prefs.getString("share_code", null)
             if (!shareCode.isNullOrBlank()) {
                 viewModel.observeSharedReminders(shareCode)

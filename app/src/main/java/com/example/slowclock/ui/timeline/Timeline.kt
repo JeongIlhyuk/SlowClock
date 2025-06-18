@@ -1,4 +1,4 @@
-package com.example.slowclock
+package com.example.slowclock.ui.timeline
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

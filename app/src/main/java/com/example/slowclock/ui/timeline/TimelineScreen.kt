@@ -1,4 +1,4 @@
-package com.example.slowclock
+package com.example.slowclock.ui.timeline
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
@@ -9,12 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,19 +24,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.slowclock.data.model.Schedule
 import com.example.slowclock.ui.main.MainViewModel
-import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 @Composable
-fun TimelineScreen(modifier: Modifier = Modifier) {
+fun TimelineScreen(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
     val context = LocalContext.current
-
     // Calendar 및 날짜 수정 Method
     // 0000년 00월 00일 Format
     val formatter = remember{ SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA)}
@@ -49,10 +40,10 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
     // 드래그 중첩 방지
     var hasSwiped by remember { mutableStateOf(false) }
 
-
     // Timeline 날짜 선택 및 이동
     var calendar = remember{Calendar.getInstance()}
     val Date = remember { mutableStateOf(formatter.format(calendar.time))}
+
     val datePickerDialog =
         DatePickerDialog(
             context,
@@ -66,13 +57,12 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
 
             )
 
-    val viewModel: MainViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsState()
-    val selectedDate = remember { mutableStateOf(formatter.format(calendar.time)) }
     val filteredSchedules = uiState.todaySchedules.filter { schedule ->
         val scheduleDate = formatter.format(schedule.startTime.toDate())
-        scheduleDate == selectedDate.value
+        scheduleDate == Date.value
     }
+
     // Timeline Screen 컨텐츠
     BoxWithConstraints(modifier= Modifier.fillMaxSize().padding(top=50.dp)) {
         Column(
@@ -119,8 +109,8 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable {
-                    datePickerDialog.show()
-                }
+                        datePickerDialog.show()
+                    }
             )
             // Default : 오늘 날짜, 이후 캘린더 조작 혹은 버튼 클릭으로 날짜 변경 가능
 
@@ -130,22 +120,7 @@ fun TimelineScreen(modifier: Modifier = Modifier) {
             )
 
         }
-        // FAB를 이용한 캘린더 열기 - Timeline 컨텐츠를 가리는 경우가 생겨 일단 보류
-        /*FloatingActionButton(
-            modifier=Modifier
-                .padding(40.dp)
-                .size(80.dp)
-                .align(Alignment.BottomEnd),
-            onClick = {
-                datePickerDialog.show()
-            }
-        ){
-            Icon(
-                Icons.Default.DateRange,
-                contentDescription="",
-                modifier=Modifier.size(25.dp)
-            )
-        }*/
+
     }
 
 }

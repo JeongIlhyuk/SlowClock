@@ -13,7 +13,7 @@ class DummyDataManager {
     suspend fun addDummyDataIfNeeded() {
         try {
             // 새로운 ScheduleResult 형태로 수정
-            when (val result = scheduleRepository.getTodaySchedules()) {
+            when (val result = scheduleRepository.getSchedulesForDate(Calendar.getInstance())) {
                 is ScheduleRepository.ScheduleResult.Success -> {
                     val existing = result.data
 
