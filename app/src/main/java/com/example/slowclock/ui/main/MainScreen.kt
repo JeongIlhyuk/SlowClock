@@ -188,7 +188,6 @@ fun MainScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
-
             // 🟡 지금 할 일
             uiState.currentSchedule?.let { schedule ->
                 item {

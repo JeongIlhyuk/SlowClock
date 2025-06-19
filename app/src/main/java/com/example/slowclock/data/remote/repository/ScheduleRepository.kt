@@ -86,7 +86,6 @@ class ScheduleRepository {
                 endTime = endTime,
                 completed = completed,
                 recurring = recurring,
-                skipped = skipped,
                 recurringType = recurringType,
                 createdAt = createdAt,
                 updatedAt = updatedAt

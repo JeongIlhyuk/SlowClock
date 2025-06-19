@@ -42,6 +42,7 @@ import com.example.slowclock.ui.addschedule.components.TitleInputSection
 @Composable
 fun AddScheduleScreen(
     scheduleId: String? = null,
+    initialTitle: String? = null,
     onNavigateBack: (Boolean) -> Unit,
     viewModel: AddScheduleViewModel = viewModel(),
     onNavigateToRecommendation: () -> Unit
@@ -55,7 +56,11 @@ fun AddScheduleScreen(
             viewModel.loadScheduleForEdit(scheduleId)
         }
     }
-
+    LaunchedEffect(initialTitle) {
+        if (!initialTitle.isNullOrBlank()) {
+            viewModel.updateTitle(initialTitle)
+        }
+    }
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             onNavigateBack(true)

@@ -1,7 +1,6 @@
 // app/src/main/java/com/example/slowclock/navigation/AppNavigation.kt
 package com.example.slowclock.navigation
 
-import RecommendationScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -12,6 +11,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.slowclock.ui.Recommendation.RecommendationScreen
 import com.example.slowclock.ui.timeline.TimelineScreen
 import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.common.components.BottomNavigationBar
@@ -81,8 +82,17 @@ fun AppNavigation() {
             composable("timeline") { TimelineScreen(mainViewModel) }
             composable("settings") { SettingsScreen() }
 
-            composable("add_schedule") {
+            composable(
+                route = "add_schedule?title={title}",
+                arguments = listOf(
+                    navArgument("title") {
+                        nullable = true; defaultValue = ""
+                    }
+                )
+                ) { backStackEntry ->
+                val titleArg = backStackEntry.arguments?.getString("title")
                 AddScheduleScreen(
+                    initialTitle = titleArg,
                     onNavigateBack = { success ->
                         if (success) {
                             navController.previousBackStackEntry
@@ -122,7 +132,9 @@ fun AppNavigation() {
             }
 
             composable("recommendation") {
-                RecommendationScreen()
+                RecommendationScreen(
+                    navController = navController
+                )
             }
 
             composable("settings_share_code") {
