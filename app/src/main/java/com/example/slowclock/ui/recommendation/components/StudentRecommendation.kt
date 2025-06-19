@@ -1,4 +1,4 @@
-package com.example.slowclock.ui.Recommendation.components
+package com.example.slowclock.ui.recommendation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

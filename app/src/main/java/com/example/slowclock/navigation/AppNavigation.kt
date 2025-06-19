@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.slowclock.ui.Recommendation.RecommendationScreen
+import com.example.slowclock.ui.recommendation.RecommendationScreen
 import com.example.slowclock.ui.timeline.TimelineScreen
 import com.example.slowclock.ui.addschedule.AddScheduleScreen
 import com.example.slowclock.ui.common.components.BottomNavigationBar
@@ -98,11 +98,18 @@ fun AppNavigation() {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set("schedule_added", true)
+
+                        }else{
+                            navController.navigate("main") {
+                                popUpTo("main") { inclusive = false }
+                                launchSingleTop = true
+                            }
                         }
-                        navController.popBackStack()
                     },
                     onNavigateToRecommendation = {
-                        navController.navigate("recommendation")
+                        navController.navigate("recommendation"){
+                            popUpTo("main")
+                        }
                     }
                 )
             }
@@ -117,7 +124,12 @@ fun AppNavigation() {
                                 ?.savedStateHandle
                                 ?.set("schedule_added", true)
                         }
-                        navController.popBackStack()
+                        else{
+                            navController.navigate("main") {
+                                popUpTo("main") { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
                     },
                     onNavigateToRecommendation = {
                         navController.navigate("recommendation")

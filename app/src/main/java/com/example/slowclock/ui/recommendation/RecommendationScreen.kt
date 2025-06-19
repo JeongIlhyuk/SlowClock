@@ -1,4 +1,4 @@
-package com.example.slowclock.ui.Recommendation
+package com.example.slowclock.ui.recommendation
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -13,10 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.slowclock.ui.Recommendation.components.ADHDRecommendation
-import com.example.slowclock.ui.Recommendation.components.ElderlyRecommendation
-import com.example.slowclock.ui.Recommendation.components.InfoRecommendation
-import com.example.slowclock.ui.Recommendation.components.StudentRecommendation
+import com.example.slowclock.ui.recommendation.components.ADHDRecommendation
+import com.example.slowclock.ui.recommendation.components.ElderlyRecommendation
+import com.example.slowclock.ui.recommendation.components.StudentRecommendation
 
 @Composable
 fun RecommendationScreen(navController: NavController, modifier: Modifier = Modifier) {
