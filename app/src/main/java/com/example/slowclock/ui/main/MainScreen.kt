@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,6 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.slowclock.ui.common.components.ErrorCard
 import com.example.slowclock.ui.common.dialog.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.CurrentTaskSection
@@ -60,7 +66,6 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsState()
     val dateFormat = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-
     val context = LocalContext.current
     var lastShareCode by remember { mutableStateOf("") }
     val prefs = remember { context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE) }
@@ -87,7 +92,7 @@ fun MainScreen(
             onDismiss = { viewModel.hideScheduleDetail() },
             onEdit = {
                 viewModel.hideScheduleDetail()
-                onEditSchedule(schedule.id) // 편집 화면으로 이동
+                onEditSchedule(schedule.id)
             },
             onDelete = {
                 viewModel.hideScheduleDetail()
@@ -188,7 +193,6 @@ fun MainScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
-
             // 🟡 지금 할 일
             uiState.currentSchedule?.let { schedule ->
                 item {
