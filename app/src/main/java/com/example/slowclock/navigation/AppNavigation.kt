@@ -87,33 +87,25 @@ fun AppNavigation() {
             composable("settings") { SettingsScreen(navController = navController) }
 
             composable(
-                route = "add_schedule?title={title}",
-                arguments = listOf(
-                    navArgument("title") {
-                        nullable = true; defaultValue = ""
-                    }
-                )
-                ) { backStackEntry ->
-                val titleArg = backStackEntry.arguments?.getString("title")
+                route = "add_schedule"
+                ) {
+                val initialTitle = navController.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<String>("initial_title")
+
                 AddScheduleScreen(
-                    initialTitle = titleArg,
+                    initialTitle = initialTitle,
                     onNavigateBack = { success ->
                         if (success) {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set("schedule_added", true)
 
-                        }else{
-                            navController.navigate("main") {
-                                popUpTo("main") { inclusive = false }
-                                launchSingleTop = true
-                            }
                         }
+                        navController.popBackStack()
                     },
                     onNavigateToRecommendation = {
-                        navController.navigate("recommendation"){
-                            popUpTo("main")
-                        }
+                        navController.navigate("recommendation")
                     }
                 )
             }
@@ -148,9 +140,7 @@ fun AppNavigation() {
             }
 
             composable("recommendation") {
-                RecommendationScreen(
-                    navController = navController
-                )
+                RecommendationScreen(navController = navController)
             }
 
             composable("settings_share_code") {

@@ -24,12 +24,9 @@ import androidx.compose.ui.unit.sp
 import com.example.slowclock.data.model.Recommendation
 
 @Composable
-fun StudentRecommendation(onSelectRecommendation : (String) -> Unit, modifier: Modifier = Modifier) {
-    val recommendations = listOf(
-        Recommendation(title="공부"),
-        Recommendation(title="학원"),
-        Recommendation(title="학습지")
-    )
+fun StudentRecommendation(list : List<Recommendation>, onSelectRecommendation : (String) -> Unit, modifier: Modifier = Modifier) {
+    val recommendations = list.filter { it.type == "학생" || it.type == "일반" }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

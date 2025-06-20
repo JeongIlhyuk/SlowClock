@@ -24,13 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.example.slowclock.data.model.Recommendation
 
 @Composable
-fun ElderlyRecommendation(onSelectRecommendation : (String) -> Unit,modifier: Modifier = Modifier) {
-    val recommendations = listOf(
-        Recommendation(title="병원 예약"),
-        Recommendation(title="산책"),
-        Recommendation(title="노인정 모임"),
-        Recommendation(title="약 복용")
-    )
+fun ElderlyRecommendation(list : List<Recommendation>, onSelectRecommendation : (String) -> Unit, modifier: Modifier = Modifier) {
+    val recommendations = list.filter { it.type == "노인" || it.type == "일반" }
 
     Column(
         modifier = Modifier

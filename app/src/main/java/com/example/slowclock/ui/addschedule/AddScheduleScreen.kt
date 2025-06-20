@@ -1,5 +1,6 @@
 package com.example.slowclock.ui.addschedule
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -47,9 +49,14 @@ fun AddScheduleScreen(
     viewModel: AddScheduleViewModel = viewModel(),
     onNavigateToRecommendation: () -> Unit
 ) {
+    val scrollState = remember { ScrollState(0) }
     val uiState by viewModel.uiState.collectAsState()
     val isEditMode = !scheduleId.isNullOrBlank()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        scrollState.scrollTo(0)
+    }
 
     LaunchedEffect(scheduleId) {
         if (!scheduleId.isNullOrBlank()) {
@@ -117,7 +124,7 @@ fun AddScheduleScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
