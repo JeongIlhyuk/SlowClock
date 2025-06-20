@@ -2,15 +2,24 @@ package com.example.slowclock.ui.timeline
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -19,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.unit.Dp
 
@@ -33,86 +43,69 @@ fun Timeline(
     height: Dp,
     items: List<Schedule>
 ) {
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault()) // 시간 포맷
+    val sortedItems = items.sortedBy { it.startTime.seconds }
+    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    // 일정 박스
     Box(
         modifier = Modifier
-            .height(height)
-            .fillMaxWidth()
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
     ) {
-        // Timeline
+        // 전체 세로선: Box 전체 높이를 따라 고정
         Divider(
             color = Color(0xFF3A5CCC),
             modifier = Modifier
-                .fillMaxHeight()
                 .width(2.dp)
+                .fillMaxHeight()
                 .align(Alignment.Center)
         )
 
-        // 시간 순으로 일정 정렬
-        val allItems = items.sortedBy { it.startTime.seconds }
-        val spacing = if (allItems.size > 1) height / (allItems.size+2) else 0.dp
-
-        // Timeline에 일정과 동일한 지점에 Point 구현
-        allItems.forEachIndexed { index, _ ->
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = spacing * index + 50.dp)
-                    .width(8.dp)
-                    .height(8.dp)
-                    .background(Color(0xFF3A5CCC), shape = CircleShape)
-            )
-        }
-        // Timeline에 맞춰 일정 구현
-        var twist = true
-        allItems.forEachIndexed { index, item ->
-            val backgroundColor = if (item.completed) {
-                Color(0xFFE6F4EA) // 연한 초록
-            } else {
-                Color.White
-            }
-            val borderColor = if (item.completed) {
-                Color.Transparent
-            } else {
-                Color(0xFF1A73E8) // 파란색 테두리
-            }
-            Card(
-                modifier = Modifier
-                    .align(if (twist) Alignment.TopStart else Alignment.TopEnd)
-                    .padding(
-                        top = spacing * index + 20.dp,
-                        start = 40.dp,
-                        end = 40.dp
-                    ),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, borderColor),
-                colors = CardDefaults.cardColors(containerColor = backgroundColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                // 일정 표시
-                Column(
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(60.dp),
+            contentPadding = PaddingValues(vertical = 24.dp)
+        ) {
+            itemsIndexed(sortedItems) { index, item ->
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
                 ) {
-
-                    Text(text = item.title,
-                        fontSize = 16.sp,
-                        fontWeight = Bold,
-                        modifier=Modifier.align(Alignment.CenterHorizontally)
-                    )
-                    Text(
-                        text = timeFormat.format(item.startTime.toDate()),
-                        fontSize = 12.sp,
-                        fontWeight = Bold,
-                        color=Color.Black,
-                        modifier=Modifier.align(Alignment.CenterHorizontally)
+                    // 점
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .align(Alignment.Center)
+                            .background(Color(0xFF3A5CCC), shape = CircleShape)
                     )
 
+                    val alignStart = index % 2 == 0
+                    Card(
+                        modifier = Modifier
+                            .align(if (alignStart) Alignment.CenterStart else Alignment.CenterEnd)
+                            .padding(horizontal = 40.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, if (item.completed) Color.Transparent else Color(0xFF1A73E8)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (item.completed) Color(0xFFE6F4EA) else Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = item.title,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = timeFormat.format(item.startTime.toDate()),
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
                 }
             }
-            if(twist) twist = false else twist = true
         }
     }
 

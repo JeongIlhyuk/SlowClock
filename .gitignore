@@ -60,3 +60,4 @@ temp/
 *.csv
 *.json
 !package.json
+keys/
