@@ -2,6 +2,7 @@
 package com.example.slowclock.ui.common.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -16,7 +17,7 @@ fun BottomNavigationBar(currentRoute: String, onNavigate: (String) -> Unit) {
         NavItem("main", Icons.Default.Home, "메인"),
         NavItem("done", Icons.Default.Check, "완료"),
         NavItem("timeline", Icons.Default.DateRange, "타임라인"),
-        NavItem("settings", Icons.Default.Settings, "설정")
+        NavItem("settings", Icons.AutoMirrored.Filled.Article, "정보")
     )
 
     NavigationBar(

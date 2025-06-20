@@ -35,7 +35,7 @@ fun Date.toTimeString(): String {
 @Composable
 fun ScheduleCard(
     schedule: Schedule,
-    onToggleComplete: () -> Unit,
+    onToggleComplete: () -> Unit, // 아직 사용 중이라면 그대로 둬도 됨
     onShowDetail: () -> Unit,
     completed: Boolean
 ) {
@@ -65,17 +65,7 @@ fun ScheduleCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ✅ 실제 작동하는 체크박스
-            Checkbox(
-                checked = completed,
-                onCheckedChange = { onToggleComplete() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF1A73E8), // 파란 체크
-                    uncheckedColor = Color(0xFF9AA0A6)  // 회색 체크
-                )
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
+            // ✅ 체크박스와 간격 제거
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
