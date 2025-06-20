@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="@drawable/alarm_background"
+    android:padding="32dp">
+
+    <!-- 현재 시간 표시 -->
+    <TextView
+        android:id="@+id/currentTimeText"
+        android:text="00:00:00"
+        android:textSize="48sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:fontFamily="monospace" />
+
+    <!-- 알람 아이콘 -->
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/baseline_access_alarm_24"
+        android:layout_marginBottom="24dp"
+        android:tint="#FF6B6B" />
+
+    <TextView
+        android:id="@+id/titleText"
+        android:text="알람 제목"
+        android:textSize="32sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/descText"
+        android:text="알람 설명"
+        android:textSize="20sp"
+        android:textColor="#E0E0E0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:layout_marginBottom="48dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/snoozeButton"
+            android:text="다시 알림 (5분)"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#FFA726"
+            android:textColor="#FFFFFF"
+            android:padding="16dp" />
+
+        <Button
+            android:id="@+id/dismissButton"
+            android:text="닫기"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FF6B6B"
+            android:textColor="#FFFFFF"
+            android:padding="16dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
