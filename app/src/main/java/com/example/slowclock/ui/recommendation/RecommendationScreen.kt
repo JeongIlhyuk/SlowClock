@@ -1,6 +1,5 @@
 package com.example.slowclock.ui.recommendation
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize

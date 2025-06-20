@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -140,13 +139,9 @@ fun AddScheduleScreen(
             TimePickerSection(
                 selectedTime = uiState.selectedTime,
                 endTime = uiState.endTime,
-                showTimePicker = uiState.showTimePicker,
-                showEndTimePicker = uiState.showEndTimePicker,
                 onTimeSelected = viewModel::updateTime,
                 onEndTimeSelected = viewModel::updateEndTime,
-                onShowTimePicker = viewModel::showTimePicker,
-                onShowEndTimePicker = viewModel::showEndTimePicker
-            )
+             )
 
             // 반복 일정 설정 (분리된 컴포넌트)
             RecurringSection(
