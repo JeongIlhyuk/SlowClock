@@ -34,7 +34,6 @@ fun RecommendationScreen(navController: NavController, modifier: Modifier = Modi
         Recommendation("공부량 확인","학생"),
         Recommendation("휴식하기","학생"),
         Recommendation("복습하기","학생"),
-        Recommendation("","학생"),
         Recommendation("햇빛 쬐기", "노인"),
         Recommendation("일기 쓰기","노인"),
         Recommendation("노인정에서 교류하기", "노인"),
