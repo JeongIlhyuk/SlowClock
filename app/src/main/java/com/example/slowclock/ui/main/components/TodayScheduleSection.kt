@@ -49,7 +49,7 @@ fun TodayScheduleSection(
 
         // 완료한 일정
         if (completed.isNotEmpty()) {
-            Text("✔ 완료한 일정", style = MaterialTheme.typography.titleMedium)
+            Text("", style = MaterialTheme.typography.titleMedium)
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 completed.forEach { schedule ->
                     ScheduleCard(
@@ -64,7 +64,7 @@ fun TodayScheduleSection(
 
         // 남은 일정
         if (remaining.isNotEmpty()) {
-            Text("🕒 남은 일정", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+            Text("", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 remaining.forEach { schedule ->
                     ScheduleCard(
