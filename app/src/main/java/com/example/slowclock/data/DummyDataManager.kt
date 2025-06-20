@@ -13,7 +13,7 @@ class DummyDataManager {
     suspend fun addDummyDataIfNeeded() {
         try {
             // 새로운 ScheduleResult 형태로 수정
-            when (val result = scheduleRepository.getTodaySchedules()) {
+            when (val result = scheduleRepository.getSchedulesForDate(Calendar.getInstance())) {
                 is ScheduleRepository.ScheduleResult.Success -> {
                     val existing = result.data
 
@@ -25,7 +25,7 @@ class DummyDataManager {
                             Schedule(
                                 title = "점심 약속",
                                 startTime = getTodayTime(12, 30),
-                                isCompleted = true
+                                completed = true
                             ),
                             Schedule(title = "저녁 산책", startTime = getTodayTime(18, 0)),
                             Schedule(title = "지금 할 일", startTime = Timestamp.now())

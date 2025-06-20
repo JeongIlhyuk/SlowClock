@@ -151,7 +151,7 @@ fun ScheduleDetailDialog(
                 }
 
                 // 반복 일정 정보 (있을 때만)
-                if (schedule.isRecurring) {
+                if (schedule.recurring) {
                     Spacer(modifier = Modifier.height(20.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -184,7 +184,7 @@ fun ScheduleDetailDialog(
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = if (schedule.isCompleted)
+                        tint = if (schedule.completed)
                             MaterialTheme.colorScheme.secondary
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant,
@@ -192,9 +192,9 @@ fun ScheduleDetailDialog(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = if (schedule.isCompleted) "✅ 완료됨" else "⏳ 미완료",
+                        text = if (schedule.completed) "✅ 완료됨" else "⏳ 미완료",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (schedule.isCompleted)
+                        color = if (schedule.completed)
                             MaterialTheme.colorScheme.secondary
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant

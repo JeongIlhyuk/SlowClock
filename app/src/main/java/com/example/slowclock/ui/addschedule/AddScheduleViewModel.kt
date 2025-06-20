@@ -8,6 +8,7 @@ import com.example.slowclock.data.model.Schedule
 import com.example.slowclock.data.remote.repository.ScheduleRepository
 import com.example.slowclock.notification.requestExactAlarmPermissionIfNeeded
 import com.example.slowclock.util.AppError
+import com.example.slowclock.util.ScheduleAlarmHelper
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,14 +16,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import com.example.slowclock.util.ScheduleAlarmHelper
 
 data class AddScheduleUiState(
     val title: String = "",
     val description: String = "",
     val selectedTime: Calendar = Calendar.getInstance(),
     val endTime: Calendar? = null,
-    val isRecurring: Boolean = false,
+    val recurring: Boolean = false,
     val recurringType: String = "daily",
     val showTimePicker: Boolean = false,
     val showEndTimePicker: Boolean = false,
@@ -68,8 +68,8 @@ class AddScheduleViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(endTime = newTime)
     }
 
-    fun updateRecurring(isRecurring: Boolean) {
-        _uiState.value = _uiState.value.copy(isRecurring = isRecurring)
+    fun updateRecurring(recurring: Boolean) {
+        _uiState.value = _uiState.value.copy(recurring = recurring)
     }
 
     fun updateRecurringType(type: String) {
@@ -110,7 +110,7 @@ class AddScheduleViewModel : ViewModel() {
                         description = schedule.description,
                         selectedTime = startCal,
                         endTime = endCal,
-                        isRecurring = schedule.isRecurring,
+                        recurring = schedule.recurring,
                         recurringType = schedule.recurringType ?: "daily",
                         isLoading = false,
                         canSave = schedule.title.isNotBlank(),
@@ -175,8 +175,8 @@ class AddScheduleViewModel : ViewModel() {
                         description = _uiState.value.description.trim(),
                         startTime = Timestamp(_uiState.value.selectedTime.time),
                         endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
-                        isRecurring = _uiState.value.isRecurring,
-                        recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
+                        recurring = _uiState.value.recurring,
+                        recurringType = if (_uiState.value.recurring) _uiState.value.recurringType else null
                     )
                 } else {
                     Schedule(
@@ -184,8 +184,8 @@ class AddScheduleViewModel : ViewModel() {
                         description = _uiState.value.description.trim(),
                         startTime = Timestamp(_uiState.value.selectedTime.time),
                         endTime = _uiState.value.endTime?.let { Timestamp(it.time) },
-                        isRecurring = _uiState.value.isRecurring,
-                        recurringType = if (_uiState.value.isRecurring) _uiState.value.recurringType else null
+                        recurring = _uiState.value.recurring,
+                        recurringType = if (_uiState.value.recurring) _uiState.value.recurringType else null
                     )
                 }
 

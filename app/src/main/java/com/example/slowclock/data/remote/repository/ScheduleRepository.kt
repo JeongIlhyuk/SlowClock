@@ -1,4 +1,4 @@
-// app/src/main/java/com/example/slowclock/data/repository/ScheduleRepository.kt
+// app/src/main/java/com/example/slowclock/data/remote/repository/ScheduleRepository.kt
 package com.example.slowclock.data.remote.repository
 
 import android.content.Context
@@ -30,64 +30,175 @@ class ScheduleRepository {
         data class Error(val error: AppError) : ScheduleResult<Nothing>()
     }
 
+    // 🔥 수동 파싱 함수 - toObject() 대신 이걸 써야 해
+    private fun parseScheduleFromDocument(doc: com.google.firebase.firestore.DocumentSnapshot): Schedule? {
+        return try {
+            val data = doc.data ?: return null
+
+            // 각 필드를 개별적으로 파싱해서 확실하게 가져옴
+            val id = doc.id
+            val userId = data["userId"] as? String ?: ""
+            val familyGroupId = data["familyGroupId"] as? String ?: ""
+            val sharedCode = data["sharedCode"] as? String ?: ""
+            val title = data["title"] as? String ?: ""
+            val description = data["description"] as? String ?: ""
+            val startTime = data["startTime"] as? Timestamp ?: Timestamp.now()
+            val endTime = data["endTime"] as? Timestamp
+            val recurringType = data["recurringType"] as? String
+            val createdAt = data["createdAt"] as? Timestamp ?: Timestamp.now()
+            val updatedAt = data["updatedAt"] as? Timestamp ?: Timestamp.now()
+
+            // Boolean 필드들을 명시적으로 변환
+            val completed = when (val completed = data["completed"]) {
+                is Boolean -> completed
+                is String -> completed.toBoolean()
+                else -> {
+                    Log.w(
+                        "ScheduleRepo",
+                        "completed 필드 파싱 실패: $completed (타입: ${completed?.javaClass})"
+                    )
+                    false
+                }
+            }
+
+            val recurring = when (val recurring = data["recurring"]) {
+                is Boolean -> recurring
+                is String -> recurring.toBoolean()
+                else -> false
+            }
+
+            val skipped = when (val skipped = data["skipped"]) {
+                is Boolean -> skipped
+                is String -> skipped.toBoolean()
+                else -> false
+            }
+
+            Log.d("ScheduleRepo", "파싱된 일정: $title, 완료상태: $completed (원본: ${data["completed"]})")
+
+            Schedule(
+                id = id,
+                userId = userId,
+                familyGroupId = familyGroupId,
+                sharedCode = sharedCode,
+                title = title,
+                description = description,
+                startTime = startTime,
+                endTime = endTime,
+                completed = completed,
+                recurring = recurring,
+                recurringType = recurringType,
+                createdAt = createdAt,
+                updatedAt = updatedAt
+            )
+        } catch (e: Exception) {
+            Log.e("ScheduleRepo", "일정 파싱 실패: ${doc.id}", e)
+            null
+        }
+    }
+
     // 현재 사용자의 오늘 일정 가져오기
-    suspend fun getTodaySchedules(): ScheduleResult<List<Schedule>> {
+//    suspend fun getTodaySchedules(): ScheduleResult<List<Schedule>> {
+//        val uid = auth.currentUser?.uid
+//        if (uid == null) {
+//            Log.e("ScheduleRepo", "사용자 로그인 안됨")
+//            return ScheduleResult.Error(AppError.AuthError)
+//        }
+//
+//        val calendar = Calendar.getInstance()
+//        calendar.set(Calendar.HOUR_OF_DAY, 0)
+//        calendar.set(Calendar.MINUTE, 0)
+//        calendar.set(Calendar.SECOND, 0)
+//        val startOfDay = calendar.time
+//
+//        calendar.set(Calendar.HOUR_OF_DAY, 23)
+//        calendar.set(Calendar.MINUTE, 59)
+//        calendar.set(Calendar.SECOND, 59)
+//        val endOfDay = calendar.time
+//
+//        return try {
+//            Log.d("ScheduleRepo", "일정 로드 시작")
+//
+//            val documents = schedulesCollection
+//                .whereEqualTo("userId", uid)
+//                .get()
+//                .await()
+//
+//            Log.d("ScheduleRepo", "Firestore에서 가져온 문서 수: ${documents.size()}")
+//
+//            // 🔥 자동 변환 대신 수동 파싱 사용
+//            val allSchedules = documents.mapNotNull { document ->
+//                Log.d("ScheduleRepo", "문서 원본 데이터: ${document.data}")
+//                parseScheduleFromDocument(document)
+//            }
+//
+//            // 코드에서 날짜 필터링
+//            val todaySchedules = allSchedules.filter { schedule ->
+//                val scheduleTime = schedule.startTime.toDate()
+//                scheduleTime.after(startOfDay) && scheduleTime.before(endOfDay)
+//            }.sortedBy { it.startTime }
+//
+//            Log.d("ScheduleRepo", "=== 최종 결과 ===")
+//            Log.d("ScheduleRepo", "전체 일정: ${allSchedules.size}개")
+//            Log.d("ScheduleRepo", "오늘 일정: ${todaySchedules.size}개")
+//            Log.d("ScheduleRepo", "완료된 일정: ${todaySchedules.count { it.completed }}개")
+//
+//            todaySchedules.forEach { schedule ->
+//                Log.d("ScheduleRepo", "- ${schedule.title}: 완료=${schedule.completed}")
+//            }
+//
+//            ScheduleResult.Success(todaySchedules)
+//
+//        } catch (e: FirebaseFirestoreException) {
+//            Log.e("ScheduleRepo", "Firestore 에러: ${e.code}", e)
+//            val error = when (e.code) {
+//                FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.NetworkError
+//                FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> AppError.TimeoutError
+//                FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.PermissionError
+//                FirebaseFirestoreException.Code.UNAUTHENTICATED -> AppError.AuthError
+//                else -> AppError.GeneralError("일정을 불러오는 중 오류가 발생했습니다: ${e.localizedMessage}")
+//            }
+//            ScheduleResult.Error(error)
+//        } catch (e: Exception) {
+//            Log.e("ScheduleRepo", "예상치 못한 에러", e)
+//            ScheduleResult.Error(e.toAppError())
+//        }
+//    }
+
+    // 특정 날짜의 data 가져오기
+    suspend fun getSchedulesForDate(calendar: Calendar): ScheduleResult<List<Schedule>> {
         val uid = auth.currentUser?.uid
         if (uid == null) {
             Log.e("ScheduleRepo", "사용자 로그인 안됨")
             return ScheduleResult.Error(AppError.AuthError)
         }
 
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        val startOfDay = calendar.time
+        val startOfDay = calendar.clone() as Calendar
+        startOfDay.set(Calendar.HOUR_OF_DAY, 0)
+        startOfDay.set(Calendar.MINUTE, 0)
+        startOfDay.set(Calendar.SECOND, 0)
+        startOfDay.set(Calendar.MILLISECOND, 0)
 
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        val endOfDay = calendar.time
+        val endOfDay = calendar.clone() as Calendar
+        endOfDay.set(Calendar.HOUR_OF_DAY, 23)
+        endOfDay.set(Calendar.MINUTE, 59)
+        endOfDay.set(Calendar.SECOND, 59)
+        endOfDay.set(Calendar.MILLISECOND, 999)
 
         return try {
-            Log.d("ScheduleRepo", "일정 로드 시작")
-
             val documents = schedulesCollection
                 .whereEqualTo("userId", uid)
                 .get()
                 .await()
 
-            // 수동으로 Schedule 객체 변환 (deprecated API 회피)
-            val allSchedules = documents.mapNotNull { document ->
-                try {
-                    document.toObject(Schedule::class.java)
-                } catch (e: Exception) {
-                    Log.w("ScheduleRepo", "일정 파싱 실패: ${document.id}", e)
-                    null
-                }
-            }
+            val allSchedules = documents.mapNotNull { parseScheduleFromDocument(it) }
 
-            // 코드에서 날짜 필터링
-            val todaySchedules = allSchedules.filter { schedule ->
+            val selectedDateSchedules = allSchedules.filter { schedule ->
                 val scheduleTime = schedule.startTime.toDate()
-                scheduleTime.after(startOfDay) && scheduleTime.before(endOfDay)
+                scheduleTime.after(startOfDay.time) && scheduleTime.before(endOfDay.time)
             }.sortedBy { it.startTime }
 
-            Log.d("ScheduleRepo", "일정 로드 성공: ${todaySchedules.size}개")
-            ScheduleResult.Success(todaySchedules)
-
-        } catch (e: FirebaseFirestoreException) {
-            Log.e("ScheduleRepo", "Firestore 에러: ${e.code}", e)
-            val error = when (e.code) {
-                FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.NetworkError
-                FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> AppError.TimeoutError
-                FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.PermissionError
-                FirebaseFirestoreException.Code.UNAUTHENTICATED -> AppError.AuthError
-                else -> AppError.GeneralError("일정을 불러오는 중 오류가 발생했습니다: ${e.localizedMessage}")
-            }
-            ScheduleResult.Error(error)
+            ScheduleResult.Success(selectedDateSchedules)
         } catch (e: Exception) {
-            Log.e("ScheduleRepo", "예상치 못한 에러", e)
             ScheduleResult.Error(e.toAppError())
         }
     }
@@ -148,22 +259,24 @@ class ScheduleRepository {
     // 일정 완료 상태 변경
     suspend fun markScheduleAsCompleted(
         scheduleId: String,
-        isCompleted: Boolean = true
+        completed: Boolean = true
     ): ScheduleResult<Unit> {
         if (scheduleId.isBlank()) {
             return ScheduleResult.Error(AppError.InvalidDataError)
         }
 
         return try {
+            Log.d("ScheduleRepo", "완료 상태 변경 시도: $scheduleId -> $completed")
+
             schedulesCollection.document(scheduleId)
                 .update(
                     mapOf(
-                        "completed" to isCompleted,
+                        "completed" to completed,
                         "updatedAt" to Timestamp.now()
                     )
                 ).await()
 
-            Log.d("ScheduleRepo", "완료 상태 변경 성공: $scheduleId -> $isCompleted")
+            Log.d("ScheduleRepo", "완료 상태 변경 성공: $scheduleId -> $completed")
             ScheduleResult.Success(Unit)
 
         } catch (e: FirebaseFirestoreException) {
@@ -267,7 +380,7 @@ class ScheduleRepository {
                 return ScheduleResult.Error(AppError.NotFoundError)
             }
 
-            val schedule = document.toObject(Schedule::class.java)
+            val schedule = parseScheduleFromDocument(document)
             if (schedule != null) {
                 ScheduleResult.Success(schedule)
             } else {
@@ -296,19 +409,20 @@ class ScheduleRepository {
                 .whereEqualTo("sharedCode", sharedCode)
                 .get()
                 .await()
+
             Log.d("ScheduleRepo", "공유코드로 조회된 문서 수: ${documents.size()}")
+
             val schedules = documents.mapNotNull { document ->
-                try {
-                    document.toObject(Schedule::class.java)
-                } catch (e: Exception) {
-                    Log.w("ScheduleRepo", "공유코드 일정 파싱 실패: ", e)
-                    null
-                }
+                parseScheduleFromDocument(document)
             }
+
             if (schedules.isEmpty()) {
                 Log.i("ScheduleRepo", "공유코드로 불러온 일정이 없습니다.")
             } else {
                 Log.i("ScheduleRepo", "공유코드로 불러온 일정: ${schedules.size}")
+                schedules.forEach { schedule ->
+                    Log.d("ScheduleRepo", "공유 일정: ${schedule.title}, 완료: ${schedule.completed}")
+                }
             }
             ScheduleResult.Success(schedules)
         } catch (e: FirebaseFirestoreException) {
@@ -330,11 +444,7 @@ class ScheduleRepository {
                     return@addSnapshotListener
                 }
                 val schedules = snapshot?.documents?.mapNotNull { doc ->
-                    try {
-                        doc.toObject(Schedule::class.java)
-                    } catch (e: Exception) {
-                        null
-                    }
+                    parseScheduleFromDocument(doc)
                 } ?: emptyList()
                 trySend(schedules)
             }

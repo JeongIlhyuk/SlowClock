@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecurringSection(
-    isRecurring: Boolean,
+    recurring: Boolean,
     recurringType: String,
     onRecurringChange: (Boolean) -> Unit,
     onRecurringTypeChange: (String) -> Unit
@@ -52,7 +52,7 @@ fun RecurringSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Checkbox(
-                    checked = isRecurring,
+                    checked = recurring,
                     onCheckedChange = onRecurringChange
                 )
                 Text(
@@ -63,7 +63,7 @@ fun RecurringSection(
                 )
             }
 
-            if (isRecurring) {
+            if (recurring) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 var expanded by remember { mutableStateOf(false) }

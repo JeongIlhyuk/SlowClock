@@ -1,5 +1,6 @@
-package com.example.slowclock
+package com.example.slowclock.ui.timeline
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +31,6 @@ import java.util.Locale
 @Composable
 fun Timeline(
     height: Dp,
-    modifier: Modifier = Modifier,
     items: List<Schedule>
 ) {
     val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault()) // 시간 포맷
@@ -65,22 +68,35 @@ fun Timeline(
         // Timeline에 맞춰 일정 구현
         var twist = true
         allItems.forEachIndexed { index, item ->
-            Box(
+            val backgroundColor = if (item.completed) {
+                Color(0xFFE6F4EA) // 연한 초록
+            } else {
+                Color.White
+            }
+            val borderColor = if (item.completed) {
+                Color.Transparent
+            } else {
+                Color(0xFF1A73E8) // 파란색 테두리
+            }
+            Card(
                 modifier = Modifier
                     .align(if (twist) Alignment.TopStart else Alignment.TopEnd)
                     .padding(
                         top = spacing * index + 20.dp,
                         start = 40.dp,
                         end = 40.dp
-                    )
-
+                    ),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, borderColor),
+                colors = CardDefaults.cardColors(containerColor = backgroundColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 // 일정 표시
                 Column(
                     modifier = Modifier
-                        .background(color = if(item.isCompleted) Color(0xFFADFF2F) else if(item.isSkipped) Color(0xFFFFB6C1) else Color(0xFFE0FFFF))
                         .padding(8.dp)
                 ) {
+
                     Text(text = item.title,
                         fontSize = 16.sp,
                         fontWeight = Bold,
@@ -93,6 +109,7 @@ fun Timeline(
                         color=Color.Black,
                         modifier=Modifier.align(Alignment.CenterHorizontally)
                     )
+
                 }
             }
             if(twist) twist = false else twist = true

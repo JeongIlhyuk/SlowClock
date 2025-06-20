@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,7 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.slowclock.ui.common.components.ErrorCard
 import com.example.slowclock.ui.common.dialog.DeleteConfirmDialog
 import com.example.slowclock.ui.main.components.CurrentTaskSection
@@ -41,6 +46,7 @@ import com.example.slowclock.ui.main.components.EmptyStateCard
 import com.example.slowclock.ui.main.components.ScheduleDetailDialog
 import com.example.slowclock.ui.main.components.SharedRemindersSection
 import com.example.slowclock.ui.main.components.TodayScheduleSection
+import java.util.Calendar
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -49,7 +55,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel = viewModel(),
+    viewModel: MainViewModel,
     shouldRefresh: Boolean = false,
     onAddSchedule: () -> Unit = {},
     onEditSchedule: (String) -> Unit = {},
@@ -60,17 +66,17 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsState()
     val dateFormat = SimpleDateFormat("yyyy년 M월 d일 EEEE", Locale.KOREAN)
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-
     val context = LocalContext.current
     var lastShareCode by remember { mutableStateOf("") }
     val prefs = remember { context.getSharedPreferences("settings", android.content.Context.MODE_PRIVATE) }
     val shareCode = prefs.getString("share_code", null)
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
+    val calendar = Calendar.getInstance()
     // 일정 추가 후 자동 새로고침
     LaunchedEffect(shouldRefresh) {
         if (shouldRefresh) {
-            viewModel.loadTodaySchedules()
+            viewModel.loadSchedules(calendar)
             val shareCode = prefs.getString("share_code", null)
             if (!shareCode.isNullOrBlank()) {
                 viewModel.observeSharedReminders(shareCode)
@@ -86,7 +92,7 @@ fun MainScreen(
             onDismiss = { viewModel.hideScheduleDetail() },
             onEdit = {
                 viewModel.hideScheduleDetail()
-                onEditSchedule(schedule.id) // 편집 화면으로 이동
+                onEditSchedule(schedule.id)
             },
             onDelete = {
                 viewModel.hideScheduleDetail()
@@ -187,7 +193,6 @@ fun MainScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp), // 더 큰 패딩
             verticalArrangement = Arrangement.spacedBy(24.dp) // 더 큰 간격
         ) {
-
             // 🟡 지금 할 일
             uiState.currentSchedule?.let { schedule ->
                 item {
